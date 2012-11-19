@@ -1,0 +1,4 @@
+Classpath Variables to be changed in the below files:
+
+1. build.xml
+2. scripts/envs.sh
