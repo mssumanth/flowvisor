@@ -54,7 +54,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 				throw new ActionDisallowedException("in port not in slice"
 						+ in_port, OFBadActionCode.OFPBAC_EPERM);
 		} else {
-			FVLog.log(LogLevel.CRIT, fvSlicer,
+			FVLog.log(LogLevel.FATAL, fvSlicer,
 					"action slicing unimplemented for type: " + this);
 			approvedActions.add(this);
 		}
@@ -119,7 +119,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 
 	private void turnOffOutOfSliceFloodBits(FVSlicer fvSlicer,
 			FVClassifier fvClassifier) {
-		FVLog.log(LogLevel.ALERT, fvClassifier,
+		FVLog.log(LogLevel.ERROR, fvClassifier,
 				"Would be turning off flooding ports for slice "
 						+ fvSlicer.getSliceName() + " but its NOT IMPLEMENTED");
 		/**

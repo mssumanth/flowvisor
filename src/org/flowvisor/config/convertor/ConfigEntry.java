@@ -98,11 +98,12 @@ public class ConfigEntry {
 	}
 
 	void sendUpdates(String fullPath) {
+		FVLog.log(LogLevel.TRACE, null, "ConfigEntry: sendUpdates");
 		for (FVEventHandler eh : watchList) {
 			try {
 				eh.handleEvent(new ConfigUpdateEvent(eh, fullPath));
 			} catch (UnhandledEvent e) {
-				FVLog.log(LogLevel.CRIT, eh,
+				FVLog.log(LogLevel.FATAL, eh,
 						"Doesn't handle ConfigUpdateEvent but asked for them !?");
 			}
 		}

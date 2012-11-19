@@ -17,6 +17,8 @@ import java.util.LinkedList;
 import org.flowvisor.api.APIAuth;
 import org.flowvisor.exceptions.DuplicateControllerException;
 import org.flowvisor.flows.FlowMap;
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -66,7 +68,7 @@ public class FVConfig {
 			return proxy.getFlowMap();
 		} catch (ConfigError e) {
 			e.printStackTrace();
-			throw new RuntimeException("WTF!?!  No FlowSpace defined!?!");
+			throw new RuntimeException("Exception: No FlowSpace defined!?!");
 		}
 		
 	}
@@ -92,6 +94,8 @@ public class FVConfig {
 	 */
 	public static synchronized void readFromFile(String filename)
 			throws FileNotFoundException {
+		
+		FVLog.log(LogLevel.TRACE,null,"FVConfig: Entered readFromFile");
 		
 		JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(filename))));
 		reader.setLenient(true);
@@ -151,6 +155,8 @@ public class FVConfig {
 			}
 		}
 		
+		FVLog.log(LogLevel.TRACE,null,"FVConfig: Exited readFromFile");
+		
 		
 	}
 
@@ -164,7 +170,7 @@ public class FVConfig {
 	 * @throws IOException 
 	 */
 	public static synchronized void writeToFile(String filename) throws FileNotFoundException  {
-		
+		FVLog.log(LogLevel.TRACE, null, "FVConfig: writeToFile");
 		JsonWriter writer = new JsonWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename))));
 		writer.setIndent("   ");
 		try {
@@ -174,7 +180,7 @@ public class FVConfig {
 			FlowSpaceImpl.getProxy().toJson(writer);
 			writer.endObject();
 		} catch (IOException e) {
-			System.err.println("Error whie writing config file " + e.getMessage());
+			System.err.println("Error while writing config file " + e.getMessage());
 		} finally {
 			try {
 				writer.close();
@@ -251,6 +257,7 @@ public class FVConfig {
 	}
 
 	public static boolean checkSliceName(String sliceName) {
+		FVLog.log(LogLevel.TRACE, null, "FVConfig: checkingSliceName " + sliceName);
 		Slice proxy = SliceImpl.getProxy();
 		return proxy.checkSliceName(sliceName);
 	}
@@ -341,6 +348,7 @@ public class FVConfig {
 	}
 	
 	public static boolean getFlowTracking() throws ConfigError {
+		FVLog.log(LogLevel.TRACE, null, "Getting Track flows");
 		Flowvisor proxy = FlowvisorImpl.getProxy();
 		return proxy.gettrack_flows();
 	}
@@ -468,6 +476,7 @@ public class FVConfig {
 	}
 	
 	public static void setFlowTracking(boolean track) throws ConfigError {
+		FVLog.log(LogLevel.TRACE, null, "Setting Track flows");
 		Flowvisor proxy = FlowvisorImpl.getProxy();
 		proxy.settrack_flows(track);
 	}
@@ -530,6 +539,7 @@ public class FVConfig {
 
 	public static void main(String args[]) throws FileNotFoundException,
 			IOException, NumberFormatException, ConfigError {
+		FVLog.log(LogLevel.TRACE,null,"FVConfig: main");
 		if (args.length < 1) {
 			System.err
 					.println("Usage: FVConfig config.xml [fvadmin_passwd] [of_listen_port] [rpc_listen_port]");
@@ -548,7 +558,6 @@ public class FVConfig {
 		System.err.println("Generating default config in db");
 		
 		LoadConfig.defaultConfig(passwd);
-		
 		FVConfigurationController.init(new ConfDBHandler());
 		// set the listen port, if requested
 		if (args.length > 2)

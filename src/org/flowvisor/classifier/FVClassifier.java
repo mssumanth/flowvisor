@@ -42,8 +42,10 @@ import org.flowvisor.flows.NoopFlowDB;
 import org.flowvisor.io.FVMessageAsyncStream;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
-import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+//import org.flowvisor.log.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats;
+//import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+import org.flowvisor.counters.SendRecvDropStats.FVStatsType;
 import org.flowvisor.message.Classifiable;
 import org.flowvisor.message.FVError;
 import org.flowvisor.message.FVMessageFactory;
@@ -98,6 +100,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	// OFPP_FLOOD
 
 	public FVClassifier(FVEventLoop loop, SocketChannel sock) {
+		FVLog.log(LogLevel.TRACE,null,"Inside FVClassifier");
 		this.loop = loop;
 		this.switchName = "unidentified:" + sock.toString();
 		this.factory = new FVMessageFactory();
@@ -106,7 +109,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			this.msgStream = new FVMessageAsyncStream(sock, this.factory, this,
 					this.stats);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.CRIT, this, "IOException in constructor!");
+			FVLog.log(LogLevel.FATAL, this, "IOException in constructor!");
 			e.printStackTrace();
 		}
 		this.sock = sock;
@@ -227,6 +230,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 */
 
 	public void init() throws IOException {
+		FVLog.log(LogLevel.TRACE, this, "FVClassifier: Inside init");
 		// send initial handshake
 		sendMsg(new OFHello(), this);
 		// delete all entries in the flowtable
@@ -282,8 +286,10 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	void updateFloodPerms() {
 		Long dpid = null;
-		if (this.doneID)
+		if (this.doneID){
 			dpid = this.getDPID();
+			FVLog.log(LogLevel.TRACE,this,"FVClassifier: updateFloodPerms - The DPID is: " + dpid);
+		}
 		try {
 			/*String entry = FVConfig.SWITCHES + FVConfig.FS + dpid + FVConfig.FS
 					+ FVConfig.FLOOD_PERM;*/
@@ -323,6 +329,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		}
 		if (Thread.currentThread().getId() != this.getThreadContext()) {
 			// this event was sent from a different thread context
+			FVLog.log(LogLevel.DEBUG, this, "FVClassifier: This event was sent from " +
+					"a different thread context");
 			loop.queueEvent(e); // queue event
 			return; // and process later
 		}
@@ -349,6 +357,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	}
 
 	private void handleKeepAlive(FVEvent e) {
+		FVLog.log(LogLevel.TRACE, this, "FVClassifier: handleKeepAlive");
 		if (!this.keepAlive.isAlive()) {
 			FVLog.log(LogLevel.WARN, this, "keepAlive timeout");
 			this.tearDown();
@@ -401,6 +410,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	}*/
 
 	void handleIOEvent(FVIOEvent e) {
+		FVLog.log(LogLevel.TRACE, this, "FVClassifier: handleIOEvent");
 		int ops = e.getSelectionKey().readyOps();
 
 		try {
@@ -411,7 +421,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				if (newMsgs != null) {
 					for (OFMessage m : newMsgs) {
 						if (m == null) {
-							FVLog.log(LogLevel.ALERT, this,
+							FVLog.log(LogLevel.ERROR, this,
 									"got an unparsable OF Message ",
 									"(msgStream.read() returned a null):",
 									"trying to ignore it");
@@ -507,6 +517,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	private void handleOFMessage_unidenitified(OFMessage m) {
 		switch (m.getType()) {
 		case HELLO: // aleady sent our hello; just NOOP here
+			FVLog.log(LogLevel.TRACE,this,"handleOFMessage_unidenitified: The msg type is HELLO");
 			if (m.getVersion() != OFMessage.OFP_VERSION) {
 				FVLog.log(LogLevel.WARN, this,
 						"Mismatched version from switch ", sock, " Got: ", m
@@ -528,6 +539,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			}
 			break;
 		case ECHO_REQUEST:
+			FVLog.log(LogLevel.TRACE,this,"handleOFMessage_unidenitified: The msg type is ECHO_REQUEST");
 			OFMessage echo_reply = new OFEchoReply();
 			echo_reply.setXid(m.getXid());
 			sendMsg(echo_reply, this);
@@ -565,6 +577,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 *
 	 */
 	private void connectToControllers(FlowMap fm) {
+		FVLog.log(LogLevel.TRACE, this, "FVClassifier: connectToControllers");
 		Set<String> newSlices;
 		synchronized (FVConfig.class) {
 			try {
@@ -573,7 +586,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				else
 					this.switchFlowMap = fm;
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.CRIT, this, "Unable to fetch Flow Space : " + e.getMessage());
+				FVLog.log(LogLevel.FATAL, this, "Unable to fetch Flow Space : " + e.getMessage());
 				return;
 			}
 					/*FlowSpaceUtil.getSubFlowMap(this.switchInfo
@@ -669,18 +682,19 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 */
 
 	public void sendMsg(OFMessage msg, FVSendMsg from) {
+		FVLog.log(LogLevel.TRACE, this, "FVClassifier: sendMsg");
 		if (this.msgStream != null) {
 			FVLog.log(LogLevel.DEBUG, this, "send to switch:", msg);
 			try {
 				this.msgStream.testAndWrite(msg);
 			} catch (BufferFull e) {
-				FVLog.log(LogLevel.CRIT, this,
+				FVLog.log(LogLevel.FATAL, this,
 						"framing BUG; tearing down: got ", e);
 				this.loop.queueEvent(new TearDownEvent(this, this));
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (MalformedOFMessage e) {
 				e.printStackTrace();
-				FVLog.log(LogLevel.CRIT, this, "BUG: bad msg: ", e);
+				FVLog.log(LogLevel.FATAL, this, "BUG: bad msg: ", e);
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (IOException e) {
 				FVLog.log(LogLevel.WARN, this,
@@ -688,8 +702,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				this.tearDown();
 			}
 		} else {
-			FVLog
-					.log(LogLevel.WARN, this, "dropping msg: no connection: ",
+			FVLog.log(LogLevel.WARN, this, "dropping msg: no connection: ",
 							msg);
 			this.stats.increment(FVStatsType.DROP, from, msg);
 		}

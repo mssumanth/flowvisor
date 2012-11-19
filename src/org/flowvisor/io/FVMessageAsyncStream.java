@@ -10,8 +10,10 @@ import org.flowvisor.exceptions.BufferFull;
 import org.flowvisor.exceptions.MalformedOFMessage;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
-import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+//import org.flowvisor.log.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats;
+//import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+import org.flowvisor.counters.SendRecvDropStats.FVStatsType;
 import org.openflow.io.OFMessageAsyncStream;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.factory.OFMessageFactory;
@@ -43,6 +45,7 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 			MalformedOFMessage, IOException {
 		int len = m.getLengthU();
 		if (this.outBuf.remaining() < len) {
+			FVLog.log(LogLevel.DEBUG,null,"FVMessageAsyncStream: testAndWrite - The outBuffer size is less than the length of the message");
 			this.flush(); // try a quick write to flush buffer
 			if (this.outBuf.remaining() < len) {
 				// drop message; throw error if we've dropped too many
@@ -66,6 +69,7 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 						outBuf.remaining(), " of ", outBuf.capacity(),
 						" bytes free");
 		}
+		FVLog.log(LogLevel.TRACE,null,"FVMessageAsyncStream: testAndWrite");
 		int start = this.outBuf.position();
 		super.write(m);
 		if (this.stats != null)
@@ -75,7 +79,7 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 		if (len != wrote) { // was the packet correctly written
 			// no! back it out and throw an error
 			this.outBuf.position(start);
-			FVLog.log(LogLevel.CRIT, null, "dropping bad OF Message: " + m);
+			FVLog.log(LogLevel.FATAL, null, "dropping bad OF Message: " + m);
 			throw new MalformedOFMessage("len=" + len + ",wrote=" + wrote
 					+ " msg=" + m);
 		}
@@ -88,6 +92,5 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 			for (OFMessage m : list)
 				this.stats.increment(FVStatsType.RECV, this.sender, m);
 		return list;
-
 	}
 }

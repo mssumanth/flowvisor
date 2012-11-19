@@ -65,6 +65,7 @@ public class BasicJSONRPCService {
 	}
 
 	public void dispatch(HttpServletRequest req, HttpServletResponse resp) {
+		FVLog.log(LogLevel.TRACE, null, "BasicJSONRPCService: dispatch" );
 		int id = 0;
 		try {
 

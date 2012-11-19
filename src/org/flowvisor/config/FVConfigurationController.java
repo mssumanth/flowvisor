@@ -4,6 +4,9 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
+
 public class FVConfigurationController {
 
 	private ConfDBSettings settings = null;
@@ -16,8 +19,9 @@ public class FVConfigurationController {
 	}
 	
 	public static FVConfigurationController instance() {
-		if (instance == null) 
-			throw new RuntimeException("Initialize the DB connection please.");
+		if (instance == null) {
+			throw new RuntimeException("Initialize the DB connection please.");	
+		}
 		return instance;
 	}
 	
@@ -49,15 +53,16 @@ public class FVConfigurationController {
 			return;
 		for (ChangedListener l : listeners.get(key)) 
 			l.processChange(new ConfigurationEvent(method, l, value));
-		
-			
+	
 	}
 	
 	public FVAppConfig getProxy(FVAppConfig instance) {
+		//FVLog.log(LogLevel.TRACE,null,"FVConfigurationController: Entering getProxy");
 		instance.setSettings(settings);
 		FVAppConfig configProxy = (FVAppConfig) Proxy.newProxyInstance(getClass().getClassLoader(), 
 				new Class[] { FVAppConfig.class, instance.getClass().getInterfaces()[0]},
 				new FVConfigProxy(instance));
+		//FVLog.log(LogLevel.TRACE,null,"FVConfigurationController: Exiting getProxy");	
 		return configProxy;
 	}
 	

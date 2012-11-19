@@ -1,10 +1,10 @@
 package org.flowvisor.log;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.events.FVEventHandler;
 import org.productivity.java.syslog4j.SyslogRuntimeException;
 import org.productivity.java.syslog4j.impl.log4j.Syslog4jAppenderSkeleton;
@@ -15,7 +15,10 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 	static public String DEFAULT_LOGGING_FACILITY = "LOCAL7";
 	static public String DEFAULT_LOGGING_IDENT = "flowvisor";
 	
-	static Logger logger = Logger.getLogger(AnyLogger.class.getName());
+	
+	static Logger logger = LoggerFactory.getLogger(AnyLogger.class.getName());
+
+	//static Logger logger = Logger.getLogger(AnyLogger.class.getName());
 	
 
 	@Override
@@ -23,7 +26,7 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 		String propFile = System.getProperty("fvlog.configuration");
 		PropertyConfigurator.configureAndWatch(propFile, 60000);
 		
-		logger.log(Level.INFO, "started flowvisor logger");
+		logger.info("started flowvisor logger");
 		return false;
 	}
 	
@@ -32,10 +35,47 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 	
 	@Override
 	public void log(LogLevel level, long time, FVEventHandler source, String msg) {
-		if (level == LogLevel.MOBUG)
-			return;
+		//Sumanth_ Does this "source": return only whether the event is being generated from
+		//Classifier or Slicer or can we make it give the actual class name too?
+		// ALI addition:
+        String srcString = null;
+        if (source != null)
+            srcString = source.getName();
+        else
+            srcString = "none";
+
+        msg = srcString + " " + msg;
+
+		switch(level){
+			case TRACE: 
+				logger.trace(msg);
+				break;
 		
-		logger.log(level.getPriority(), msg);
+			case DEBUG: 
+				logger.debug(msg);
+				break;
+				
+			case INFO: 
+				logger.info(msg);
+				break;
+				
+			case WARN: 
+				logger.warn(msg);
+				break;
+			case ERROR: 
+				logger.error(msg);
+				break;
+				
+			case FATAL: 
+				logger.error(msg);
+				break;
+				
+			default:
+				// ALI: if we get here then we have a problem....
+				logger.error("There is a problem here as it has entered the default logger level!");
+				if (msg != null)
+					logger.info(msg);
+		}
 
 	}
 	
@@ -45,16 +85,19 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 	 * @see org.productivity.java.syslog4j.impl.log4j.Syslog4jAppenderSkeleton#requiresLayout()
 	 * 
 	 * Stupid Syslog4jAppender doesn't layout stuff to syslog, and also breaks log4j's 
-	 * requirement to return true frim this method even if you don't layout.
+	 * requirement to return true from this method even if you don't layout.
 	 */
+	
 	public boolean requiresLayout() {
 		return true;
 	}
 
 	@Override
 	public String initialize() throws SyslogRuntimeException {
+		
+		//Sumanth: What should the protocol be changed to?
 		if (this.protocol == null)
-			this.protocol = UDP;
+			this.protocol = TCP;//IS this ok?
 		
 		try {
 			String fac = FVConfig.getLogFacility();

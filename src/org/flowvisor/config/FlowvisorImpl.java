@@ -366,6 +366,7 @@ public class FlowvisorImpl implements Flowvisor {
 	
 	@Override
 	public Boolean getTopologyServer(int id) throws ConfigError {
+		FVLog.log(LogLevel.TRACE,null,"FlowvisorImpl: getTopologyServer");
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet set = null;
@@ -384,7 +385,6 @@ public class FlowvisorImpl implements Flowvisor {
 			close(set);
 			close(ps);
 			close(conn);
-			
 		}
 		return null;
 	}
@@ -699,6 +699,7 @@ public class FlowvisorImpl implements Flowvisor {
 	}
 	
 	public static Flowvisor getProxy() {
+		//FVLog.log(LogLevel.TRACE,null,"FlowvisorImpl: Inside getProxy");
 		return (Flowvisor) FVConfigurationController.instance()
 		.getProxy(getInstance());
 	}
@@ -749,7 +750,6 @@ public class FlowvisorImpl implements Flowvisor {
 			close(set);
 			close(ps);
 			close(conn);
-			
 		}
 	}
 
@@ -848,7 +848,7 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setBoolean(7, (Boolean) row.get(TOPO));
 			
 			if (row.get(LOGGING) == null)
-				row.put(LOGGING, "NOTE");
+				row.put(LOGGING, "INFO");
 			ps.setString(8, (String) row.get(LOGGING));
 			
 			if (row.get(LOGIDENT) == null)

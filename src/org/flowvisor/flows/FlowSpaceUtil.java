@@ -46,6 +46,7 @@ public class FlowSpaceUtil {
 	 * @return A list of names of slices, i.e., "alice", "bob", etc.
 	 */
 	public static Set<String> getSlicesByDPID(FlowMap flowMap, long dpid) {
+		FVLog.log(LogLevel.TRACE,null,"FlowSpaceUtil: getSlicesByDPID");
 		Set<String> ret = new HashSet<String>();
 		FVMatch match = new FVMatch();
 		match.setWildcards(OFMatch.OFPFW_ALL);
@@ -165,6 +166,7 @@ public class FlowSpaceUtil {
 	 */
 
 	public static void main(String args[]) throws FileNotFoundException, ConfigError  {
+		FVLog.log(LogLevel.TRACE, null, "FlowSpaceUtil: main");
 		if ((args.length != 2) && (args.length != 3)) {
 			System.err
 					.println("Usage: FLowSpaceUtil config.xml <dpid> [slice]");
@@ -211,14 +213,17 @@ public class FlowSpaceUtil {
 	 */
 	
 	public static FlowMap getFlowMap(long dpid)  throws ConfigError {
+		FVLog.log(LogLevel.TRACE,null,"FlowSpaceUtil: getFlowMap");
 		FlowMap fm = FVConfig.getFlowSpaceFlowMap();
 		switch (fm.getType()) {
 		case LINEAR:
+			FVLog.log(LogLevel.DEBUG,null,"FlowSpaceUtil: It is a Linear Flowmap");
 			return FlowSpaceUtil.getSubFlowMap(fm, dpid, new FVMatch());
 		case FEDERATED: 
+			FVLog.log(LogLevel.DEBUG,null,"FlowSpaceUtil: It is a Federated Flowmap");
 			return fm;
 		default:
-			FVLog.log(LogLevel.ALERT, null, "Unknown FlowMap type");
+			FVLog.log(LogLevel.ERROR, null, "Unknown FlowMap type");
 			throw new RuntimeException("Unknown FlowMap type; time to quit");
 		}
 	}
@@ -339,6 +344,7 @@ public class FlowSpaceUtil {
 	 * @param sliceName
 	 */
 	public static FlowMap deleteFlowSpaceBySlice(String sliceName) throws ConfigError {
+		FVLog.log(LogLevel.TRACE,null,"FlowSpaceUtil: deleteFlowSpaceBySlice");
 		FlowMap flowSpace = FVConfig.getFlowSpaceFlowMap();
 		SliceAction sliceAction = null;
 		HashSet<Integer> toRemove = new HashSet<Integer>();
@@ -390,7 +396,7 @@ public class FlowSpaceUtil {
 			case FEDERATED:
 				return new FederatedFlowMap();
 			default:
-				FVLog.log(LogLevel.ALERT, null, "Unknown FlowMap type");
+				FVLog.log(LogLevel.ERROR, null, "Unknown FlowMap type");
 				throw new RuntimeException("Unknown FlowMap type; time to quit");	
 		}
 	}

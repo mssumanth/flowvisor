@@ -43,6 +43,7 @@ public class FVMessageUtil {
 	 */
 	static public void translateXid(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
+		FVLog.log(LogLevel.DEBUG, null, "FVMessageUtil: translatingXid from controller-unique to switch-unique");
 		XidTranslator xidTranslator = fvClassifier.getXidTranslator();
 		int newXid = xidTranslator.translate(msg.getXid(), fvSlicer);
 		msg.setXid(newXid);
@@ -64,6 +65,8 @@ public class FVMessageUtil {
 			return null;
 		msg.setXid(pair.getXid());
 		String sliceName = pair.getSliceName();
+		FVLog.log(LogLevel.DEBUG, null, "FVMessageUtil: xid is- " + pair.getXid()
+				+ "sliceName is- "+ pair.getSliceName());
 		return fvClassifier.getSlicerByName(sliceName);
 	}
 
@@ -85,6 +88,7 @@ public class FVMessageUtil {
 	static public List<OFAction> approveActions(List<OFAction> actionList,
 			OFMatch match, FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
+		FVLog.log(LogLevel.TRACE,null,"FVMessageUtil: approveActions");
 		List<OFAction> approvedList = new ArrayList<OFAction>();
 
 		if (actionList == null)

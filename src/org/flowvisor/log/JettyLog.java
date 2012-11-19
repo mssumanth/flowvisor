@@ -2,7 +2,6 @@ package org.flowvisor.log;
 
 import org.eclipse.jetty.util.log.Logger;
 
-
 public class JettyLog implements Logger{
 
 	@Override

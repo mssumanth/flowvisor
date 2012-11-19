@@ -11,6 +11,7 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.apache.log4j.Level;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
 
@@ -25,7 +26,6 @@ import org.flowvisor.log.LogLevel;
  *
  */
 public class ConfDBHandler implements ConfDBSettings {
-	
 	private String protocol = null;
 	private String dbName = null;
 	private String username = null;
@@ -81,7 +81,7 @@ public class ConfDBHandler implements ConfDBSettings {
 		try {
 			gop.returnObject(conn);
 		} catch (Exception e) {
-			FVLog.log(LogLevel.CRIT, null, "Unable to return connection");
+			FVLog.log(LogLevel.FATAL, null, "Unable to return connection");
 		}
 	}
 

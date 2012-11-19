@@ -14,6 +14,7 @@ public class BracketParseTest extends TestCase {
 	@Override
 	protected void setUp() {
 		FVLog.setDefaultLogger(new DevNullLogger());
+		//FVLog.setDefaultLogger();
 	}
 	public void testBracketParse() {
 		FVMatch match = new FVMatch();

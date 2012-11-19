@@ -159,6 +159,7 @@ public class TopologyCallback implements Runnable {
 	}
 
 	private void runSpecificCallback(){
+		FVLog.log(LogLevel.TRACE,null,"TopologyCallback: runSpecificCallback");
 		HttpURLConnection connection = null;
 		OutputStreamWriter writer = null;
 		InputStreamReader reader = null;
@@ -245,6 +246,8 @@ public class TopologyCallback implements Runnable {
 	}
 
 	public void installDumbTrust() {
+		
+		FVLog.log(LogLevel.TRACE,null,"TopologyCallback: installDumbTrust");
 
 		// Create a trust manager that does not validate certificate chains
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {

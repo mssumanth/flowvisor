@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.flowvisor.FlowVisor;
+import org.flowvisor.api.APIUserCred;
 import org.flowvisor.exceptions.UnhandledEvent;
 import org.flowvisor.fvtimer.FVTimer;
 import org.flowvisor.log.FVLog;
@@ -44,6 +45,7 @@ public class FVEventLoop {
 	 */
 
 	public void register(SelectableChannel ch, int ops, FVEventHandler handler) {
+		FVLog.log(LogLevel.TRACE,null,"FVEventLoop: Registering a new event listener with socket");
 		FlowVisor.getInstance().addHandler(handler);
 		try {
 			ch.register(selector, ops, handler);
@@ -64,10 +66,12 @@ public class FVEventLoop {
 	public void unregister(SelectableChannel ch, FVEventHandler handler) {
 		// note, apparently you don't have to manually cancel a selectable
 		// channel; it's handled by socket.close()
+		FVLog.log(LogLevel.TRACE,null,"FVEventLoop: unregister");
 		FlowVisor.getInstance().removeHandler(handler);
 	}
 
 	public void queueEvent(FVEvent e) {
+		FVLog.log(LogLevel.DEBUG, null, "FVEventLoop: Queing Events");
 		synchronized (eventQueue) {
 			eventQueue.add(e);
 		}
@@ -102,6 +106,7 @@ public class FVEventLoop {
 	 *
 	 */
 	public void doEventLoop() throws IOException, UnhandledEvent {
+		FVLog.log(LogLevel.DEBUG,null, "Main top level I/O loop");
 		this.thread_id = Thread.currentThread().getId();
 		while (!shouldStop) {
 			long nextTimerEvent;
@@ -112,6 +117,7 @@ public class FVEventLoop {
 			// copy queued events out of the way and clear queue
 			synchronized (eventQueue) {
 				if (!eventQueue.isEmpty()) {
+					FVLog.log(LogLevel.DEBUG,null,"EventQueue is not empty!");
 					tmpQueue = eventQueue;
 					eventQueue = new LinkedList<FVEvent>();
 				}
@@ -150,14 +156,14 @@ public class FVEventLoop {
 			}
 
 			// wait until next IO event or timer event
-			FVLog.log(LogLevel.MOBUG, null, "calling select with timeout=",
+			FVLog.log(LogLevel.DEBUG, null, "calling select with timeout=",
 					nextTimerEvent);
 			nEvents = selector.select(nextTimerEvent);
 			if (nEvents > 0) {
 				for (SelectionKey sk : selector.selectedKeys()) {
 					if (sk.isValid()) { // skip any keys that have been canceled
 						handler = (FVEventHandler) sk.attachment();
-						FVLog.log(LogLevel.MOBUG, null, "sending IO Event= ",
+						FVLog.log(LogLevel.DEBUG, null, "sending IO Event= ",
 								sk.readyOps(), " to ", handler.getName());
 						startCounter = System.currentTimeMillis();
 						FVIOEvent ioEvent = new FVIOEvent(sk, null, handler);

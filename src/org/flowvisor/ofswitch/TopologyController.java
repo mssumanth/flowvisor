@@ -82,10 +82,13 @@ public class TopologyController extends OFSwitchAcceptor {
 	}
 
 	public static FVEventHandler spawn(FVEventLoop pollLoop) {
+		FVLog.log(LogLevel.TRACE,null,"TopologyController: spawn");
 		if (runningInstance != null)
 			return runningInstance; // return version that's already running
-		if (!isConfigured())
+		if (!isConfigured()){
+			FVLog.log(LogLevel.DEBUG,null,"TopologyController: spawn not configured");
 			return null; // not configured for it
+		}
 		TopologyController tc = null;
 		try {
 			tc = new TopologyController(pollLoop, 0, 16); // 0 == any port
@@ -94,12 +97,12 @@ public class TopologyController extends OFSwitchAcceptor {
 				FVConfig.setSliceHost(TopoUser, "localhost");
 				FVConfig.setSlicePort(TopoUser, port);
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.CRIT, tc,
+				FVLog.log(LogLevel.FATAL, tc,
 						"tried to register topology controller info, but topo user '"
 								+ TopoUser + "' not found: " + e);
 			}
 		} catch (IOException e) {
-			FVLog.log(LogLevel.ALERT, null,
+			FVLog.log(LogLevel.ERROR, null,
 					"failed to spawn TopologyController: " + e);
 		}
 		return tc;
@@ -217,7 +220,7 @@ public class TopologyController extends OFSwitchAcceptor {
 		try {
 			sock = ssc.accept();
 			if (sock == null) {
-				FVLog.log(LogLevel.CRIT, null,
+				FVLog.log(LogLevel.FATAL, null,
 						"ssc.accept() returned null !?! FIXME!");
 				return;
 			}
@@ -272,6 +275,7 @@ public class TopologyController extends OFSwitchAcceptor {
 		for (TopologyConnection tc : this.topologyConnections)
 			if (tc.isConnected())
 				dpids.add(tc.getDataPathID());
+		FVLog.log(LogLevel.DEBUG, null, "List of dpids connected to the topology controller: " + dpids);
 		return dpids;
 	}
 
@@ -305,6 +309,8 @@ public class TopologyController extends OFSwitchAcceptor {
 	 */
 
 	public static boolean isConfigured() {
+		FVLog.log(LogLevel.TRACE, null, "TopologyController: Checking of FV is configured to do topology" +
+				"discovery");
 		try {
 			return FVConfig.getTopologyServer();
 		} catch (ConfigError e) {

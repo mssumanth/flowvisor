@@ -1,6 +1,7 @@
 package org.flowvisor.classifier;
 
-import org.flowvisor.log.SendRecvDropStats;
+//import org.flowvisor.log.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats;
 import org.openflow.protocol.OFMessage;
 
 public interface FVSendMsg {

@@ -40,13 +40,13 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		} catch (java.net.SocketException e) {
 			// try default/ipv4 if that fails
 			try {
-				FVLog.log(LogLevel.NOTE, this, "failed to bind IPv6 address; trying IPv4");
+				FVLog.log(LogLevel.INFO, this, "failed to bind IPv6 address; trying IPv4");
 				ssc.socket().bind(
 						new InetSocketAddress(port),
 						backlog);
 			} catch (java.net.SocketException se) {
-				FVLog.log(LogLevel.NOTE, this, "failed to bind IPv4 address; Quitting");
-				FVLog.log(LogLevel.NOTE, this, "OF Control address already in use.");
+				FVLog.log(LogLevel.INFO, this, "failed to bind IPv4 address; Quitting");
+				FVLog.log(LogLevel.INFO, this, "OF Control address already in use.");
 				e.printStackTrace();
 				System.exit(1);
 			}
@@ -54,7 +54,7 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		ssc.configureBlocking(false);
 		this.listenPort = ssc.socket().getLocalPort();
 
-		FVLog.log(LogLevel.INFO, this, "Listenning on port " + this.listenPort);
+		FVLog.log(LogLevel.INFO, this, "Listening on port " + this.listenPort);
 
 		// register this module with the polling loop
 		pollLoop.register(ssc, SelectionKey.OP_ACCEPT, this);
@@ -105,6 +105,7 @@ public class OFSwitchAcceptor implements FVEventHandler {
 
 	@Override
 	public void handleEvent(FVEvent e) throws UnhandledEvent {
+		FVLog.log(LogLevel.TRACE,null, "OFSwitchAcceptor: handleEvent");
 		if (Thread.currentThread().getId() != this.getThreadContext()) {
 			// this event was sent from a different thread context
 			pollLoop.queueEvent(e); // queue event
@@ -117,12 +118,13 @@ public class OFSwitchAcceptor implements FVEventHandler {
 	}
 
 	void handleIOEvent(FVIOEvent event) {
+		FVLog.log(LogLevel.TRACE,null, "OFSwitchAcceptor: handleIOEvent");
 		SocketChannel sock = null;
 
 		try {
 			sock = ssc.accept();
 			if (sock == null) {
-				FVLog.log(LogLevel.CRIT, null,
+				FVLog.log(LogLevel.FATAL, null,
 						"ssc.accept() returned null !?! FIXME!");
 				return;
 			}
@@ -132,7 +134,7 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		} catch (IOException e) // ignore IOExceptions -- is this the right
 		// thing to do?
 		{
-			FVLog.log(LogLevel.CRIT, this, "Got IOException for "
+			FVLog.log(LogLevel.FATAL, this, "Got IOException for "
 					+ (sock != null ? sock : "unknown socket :: ") + e);
 			throw new RuntimeException(e);
 		}

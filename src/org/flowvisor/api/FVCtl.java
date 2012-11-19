@@ -40,6 +40,8 @@ import org.flowvisor.flows.FlowDBEntry;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
 import org.openflow.protocol.action.OFAction;
 
 
@@ -196,6 +198,7 @@ public class FVCtl {
 
 	private void handleFlowSpaceResults(List<FlowEntry> flows){
 		for(FlowEntry flow : flows){
+			FVLog.log(LogLevel.DEBUG, null, "handleFlowSpaceResults: " + flow.toString());
 			System.out.println(flow.toString());
 		}
 	}
@@ -266,7 +269,7 @@ public class FVCtl {
 		return trustAllCerts;
 	}
 	public void installDumbTrust() {
-
+		//FVLog.log(LogLevel.TRACE, null, "FlowVisorAuthenticator: Installing Dumb Trust" );
 		TrustManager[] trustAllCerts = getTrustAllManager();
 		try {
 			// Install the all-trusting trust manager

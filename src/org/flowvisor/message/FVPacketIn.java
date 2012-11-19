@@ -118,6 +118,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 
 	private void sendDropRule(FVClassifier fvClassifier, FlowEntry flowEntry,
 			String sliceName, short hardTimeout, short idleTimeout) {
+		FVLog.log(LogLevel.TRACE, null, "FVPacketIn: sendDropRule");
 		FVFlowMod flowMod = (FVFlowMod) FlowVisor.getInstance().getFactory()
 				.getMessage(OFType.FLOW_MOD);
 		// block this exact flow
@@ -130,7 +131,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 		try {
 			drop_policy = FVConfig.getDropPolicy(sliceName);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, fvClassifier, "Failed to retrieve drop policy from config."
+			FVLog.log(LogLevel.ERROR, fvClassifier, "Failed to retrieve drop policy from config."
 					+ "\nDefauting to exact drop_policy");
 			drop_policy = "exact";
 		}
@@ -140,7 +141,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			flowMod.setMatch(flowEntry.getRuleMatch());
 		else
 			// Should never happen
-			FVLog.log(LogLevel.CRIT, fvClassifier, "Error in configuration!");
+			FVLog.log(LogLevel.FATAL, fvClassifier, "Error in configuration!");
 		flowMod.setCommand(FVFlowMod.OFPFC_ADD);
 		flowMod.setActions(new LinkedList<OFAction>()); // send to zero-length
 		// list, i.e., DROP
@@ -192,8 +193,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			DPIDandPort dpidandport = TopologyConnection.parseLLDP(this
 					.getPacketData());
 			if (dpidandport == null) {
-				FVLog
-						.log(LogLevel.DEBUG, topologyConnection,
+				FVLog.log(LogLevel.DEBUG, topologyConnection,
 								"ignoring non-lldp packetin: "
 										+ this.toVerboseString());
 				return;

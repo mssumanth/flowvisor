@@ -30,8 +30,10 @@ import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.io.FVMessageAsyncStream;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
-import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+//import org.flowvisor.log.SendRecvDropStats;
+//import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+import org.flowvisor.counters.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats.FVStatsType;
 import org.flowvisor.message.FVFeaturesReply;
 import org.flowvisor.message.FVMessageFactory;
 import org.flowvisor.message.FVMessageUtil;
@@ -95,7 +97,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 			this.msgStream = new FVMessageAsyncStream(sock,
 					this.fvMessageFactory, this, this.stats);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.CRIT, this, "IOException in constructor!");
+			FVLog.log(LogLevel.FATAL, this, "IOException in constructor!");
 			e.printStackTrace();
 		}
 		this.probesPerPeriod = 3;
@@ -186,6 +188,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	}
 
 	private void handleIOEvent(FVIOEvent e) {
+		FVLog.log(LogLevel.TRACE, null, "TopologyConnection: handleIOEvent");
 		int ops = e.getSelectionKey().readyOps();
 
 		try {
@@ -273,7 +276,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 			FVLog.log(LogLevel.WARN, this, "shutting down");
 			this.topologyController.disconnect(this);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.ALERT, this, "ignoring error on shutdown: " + e);
+			FVLog.log(LogLevel.ERROR, this, "ignoring error on shutdown: " + e);
 		}
 	}
 
@@ -285,6 +288,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	 * @throws IOException
 	 */
 	public void init() throws IOException {
+		FVLog.log(LogLevel.TRACE, null, "TopologyConnection:init");
 		msgStream.write(this.fvMessageFactory.getMessage(OFType.HELLO));
 		msgStream.write(this.fvMessageFactory
 				.getMessage(OFType.FEATURES_REQUEST));
@@ -439,11 +443,11 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 		try {
 			this.msgStream.testAndWrite(packetOut);
 		} catch (BufferFull e) {
-			FVLog.log(LogLevel.CRIT, this, "failed to write LLDP:", e);
+			FVLog.log(LogLevel.FATAL, this, "failed to write LLDP:", e);
 		} catch (MalformedOFMessage e) {
-			FVLog.log(LogLevel.CRIT, this, "failed to write LLDP:", e);
+			FVLog.log(LogLevel.FATAL, this, "failed to write LLDP:", e);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.CRIT, this, "failed to write LLDP:", e);
+			FVLog.log(LogLevel.FATAL, this, "failed to write LLDP:", e);
 		}
 	}
 
@@ -565,7 +569,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 		Short sPort = Short.valueOf(port);
 		if (this.fastPorts.contains(sPort)) {
 			FVLog
-					.log(LogLevel.MOBUG, this, "setting fast port to slow: ",
+					.log(LogLevel.DEBUG, this, "setting fast port to slow: ",
 							port);
 			this.fastPorts.remove(sPort);
 			this.slowPorts.add(sPort);
@@ -596,13 +600,13 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 			try {
 				this.msgStream.testAndWrite(msg);
 			} catch (BufferFull e) {
-				FVLog.log(LogLevel.CRIT, this,
+				FVLog.log(LogLevel.FATAL, this,
 						"framing bug; tearing down: got " + e);
 				// don't shut down now; we could get a ConcurrencyException
 				// just queue up a shutdown for later
 				this.pollLoop.queueEvent(new TearDownEvent(this, this));
 			} catch (MalformedOFMessage e) {
-				FVLog.log(LogLevel.CRIT, this, "BUG: " + e);
+				FVLog.log(LogLevel.FATAL, this, "BUG: " + e);
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (IOException e) {
 				FVLog.log(LogLevel.WARN, this, " killing connection, got: ", e);

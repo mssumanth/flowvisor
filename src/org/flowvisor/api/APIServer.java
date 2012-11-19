@@ -43,6 +43,7 @@ public class APIServer {
 	 * @throws Exception
 	 */
 	public static WebServer spawn() throws XmlRpcException, IOException {
+		//FVLog.log(LogLevel.TRACE,null,"APIServer: spawn");
 
 		int port;
 

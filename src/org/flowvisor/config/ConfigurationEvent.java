@@ -46,7 +46,7 @@ public class ConfigurationEvent {
 			m.invoke(base, arglist);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			FVLog.log(LogLevel.CRIT, null, e.getMessage() + " " + m + " " + base);
+			FVLog.log(LogLevel.FATAL, null, e.getMessage() + " " + m + " " + base);
 		}
 		
 	}

@@ -81,7 +81,7 @@ public class FVPacketOut extends OFPacketOut implements Classifiable, Slicable {
 				}
 			} catch (java.nio.BufferUnderflowException e) {
 				// packet was too short to match entire header; just ignore
-				FVLog.log(LogLevel.CRIT, fvSlicer,
+				FVLog.log(LogLevel.FATAL, fvSlicer,
 						"couldn't parse short packet: "
 								+ HexString.toHexString(this.getPacketData())
 								+ " :: " + e.getStackTrace());

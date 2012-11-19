@@ -3,6 +3,9 @@
  */
 package org.flowvisor.events;
 
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
+
 /**
  * Event: a timer has expired
  *
@@ -34,6 +37,7 @@ public class FVTimerEvent extends FVEvent implements Comparable<FVTimerEvent> {
 		this.arg = arg;
 		synchronized (FVTimerEvent.class) {
 			this.id = ID++;
+			FVLog.log(LogLevel.TRACE,null,"ID is: ",this.id);
 		}
 	}
 
@@ -69,6 +73,7 @@ public class FVTimerEvent extends FVEvent implements Comparable<FVTimerEvent> {
 	 *            the expireTime to set
 	 */
 	public void setExpireTime(long expireTime) {
+		FVLog.log(LogLevel.TRACE,null,"expireTime is being set to: " + expireTime);
 		this.expireTime = expireTime;
 	}
 

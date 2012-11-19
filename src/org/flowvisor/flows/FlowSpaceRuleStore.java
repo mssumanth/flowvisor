@@ -18,7 +18,7 @@ import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFMatch;
-import org.openflow.protocol.action.OFAction;
+//import org.openflow.protocol.action.OFAction;
 
 /**
  * This is the FlowSpaceRuleStore, it is the supporting structure for federated
@@ -31,7 +31,7 @@ import org.openflow.protocol.action.OFAction;
  * rule or find all matching rules quickly without having to go through all the
  * flowmap.
  * 
- * At the end of a match, this flowmap returns a a set ordered by flowentry
+ * At the end of a match, this flowmap returns a set ordered by flowentry
  * priority.
  * 
  * @author ash
@@ -44,7 +44,7 @@ public class FlowSpaceRuleStore {
 	 * All these match structures bitsets representing the slice id each rule
 	 * points to.
 	 * 
-	 * These bitset are then intersected and and prioritized. If the bit set
+	 * These bitset are then intersected and prioritized. If the bit set
 	 * contains any set bit after this process then we have a match.
 	 * 
 	 */
@@ -133,7 +133,7 @@ public class FlowSpaceRuleStore {
 
 	/**
 	 * Adds a rule to the flowmap. It does so by exploding the rule into its
-	 * fields and storing each field into its independant structure.
+	 * fields and storing each field into its independent structure.
 	 * 
 	 * @param rule
 	 *            - the rule which will be added to the flowmap
@@ -141,6 +141,7 @@ public class FlowSpaceRuleStore {
 	 * @return
 	 */
 	public void addRule(FlowEntry rule) {
+		FVLog.log(LogLevel.TRACE,null,"FlowSpaceRuleStore: addRule");
 		ruleCount++;
 		allRules.set(rule.getId());
 		BitSet flowRuleSet = getFlowRuleSet(rule);
@@ -299,6 +300,7 @@ public class FlowSpaceRuleStore {
 	 */
 
 	public List<FlowIntersect> intersect(long dpid, FVMatch match) {
+		FVLog.log(LogLevel.TRACE, null, "FlowSpaceRuleStore: intersect");
 		BitSet set = new BitSet();
 		int wildcards = match.getWildcards();
 		TreeSet<FlowIntersect> ret = new TreeSet<FlowIntersect>();
@@ -485,6 +487,7 @@ public class FlowSpaceRuleStore {
 
 	private void setField(FlowIntersect flowIntersect, FVMatch match,
 			int field) throws UnknownMatchField {
+		FVLog.log(LogLevel.TRACE, null, "FlowSpaceRuleStore: setField");
 		flowIntersect.getMatch().setWildcards(
 				flowIntersect.getMatch().getWildcards() & ~field);
 		switch (field) {
@@ -555,6 +558,7 @@ public class FlowSpaceRuleStore {
 	 * @return a list, sorted by priority, of flow space rules which match.
 	 */
 	public List<FlowEntry> match(long dpid, FVMatch match) {
+		FVLog.log(LogLevel.TRACE,null,"FlowSpaceRuleStore: Entered match");
 		BitSet set = new BitSet();
 		LinkedList<FlowEntry> flowrules = new LinkedList<FlowEntry>();
 		int wildcards = match.getWildcards();
@@ -710,6 +714,8 @@ public class FlowSpaceRuleStore {
 	 */
 	private <K> boolean testEmpty(BitSet src, Map<K, BitSet> map, K key,
 			K anykey, int wildcards, int wild) throws NoMatch {
+		FVLog.log(LogLevel.DEBUG, null, "FlowSpaceRuleStore: testing to check " +
+				"if the bit set is empty ");
 		if ((wildcards & wild) != 0)
 			return true;
 		BitSet any = get(map, anykey);
@@ -801,6 +807,8 @@ public class FlowSpaceRuleStore {
 	 * @return the rule count
 	 */
 	public int getRuleCount() {
+		FVLog.log(LogLevel.DEBUG, null, "The number of rules in this flowspace is: " +
+				ruleCount);
 		return ruleCount;
 	}
 
@@ -837,6 +845,7 @@ public class FlowSpaceRuleStore {
 	 */
 	private int testIP(FlowIntersect flowIntersect, int maskShift,
 			int masklenX, int masklenY, int x, int y) {
+		FVLog.log(LogLevel.TRACE, null, "FlowSpaceRuleStore: testIP");
 		int min = Math.min(masklenX, masklenY); // get the less specific address
 		int max = Math.max(masklenX, masklenY); // get the more specific address
 		int min_encoded = 32 - min; // because OpenFlow does it backwards... grr

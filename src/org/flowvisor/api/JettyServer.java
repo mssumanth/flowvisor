@@ -41,6 +41,8 @@ public class JettyServer implements Runnable{
 	}
 
 	private void init(int port){
+		
+		FVLog.log(LogLevel.TRACE,null,"JettyServer: Entering init");
 
 		System.setProperty("org.eclipse.jetty.util.log.class", JettyLog.class.getCanonicalName());
 
@@ -84,6 +86,7 @@ public class JettyServer implements Runnable{
 		ConstraintSecurityHandler authHandler = createAuthenticationHandler(jettyServer);
 		authHandler.setHandler(new AuthenticationHandler());
 		//context.setHandler(authHandler);
+		FVLog.log(LogLevel.TRACE,null,"JettyServer: Exiting init");
 	}
 
 	@Override
@@ -151,6 +154,7 @@ public class JettyServer implements Runnable{
 	}
 
 	public static void spawnJettyServer(int port){
+		FVLog.log(LogLevel.TRACE,null,"JettyServer: Entered spawnJettyServer");
 
 		if(port == -1){
 			try {
@@ -167,6 +171,8 @@ public class JettyServer implements Runnable{
 
 		Thread jettyThread = new Thread(new JettyServer(port));
 		jettyThread.start();
+		
+		FVLog.log(LogLevel.TRACE,null,"JettyServer: Exited spawnJettyServer");
 	}
 
 }

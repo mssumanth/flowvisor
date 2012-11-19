@@ -32,7 +32,7 @@ public class DeviceAdvertisement {
 
 	/**
 	 * This is a fugly hack to turn these structs into something that our XMLRPC
-	 * encoder can handler
+	 * encoder can handle
 	 *
 	 * FIXME: figure out if a better XMLRPC encoder can solve this for us
 	 *

@@ -18,7 +18,7 @@ public class FVActionEnqueue extends OFActionEnqueue implements SlicableAction {
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
 		// TODO Auto-generated method stub
-		FVLog.log(LogLevel.CRIT, fvSlicer,
+		FVLog.log(LogLevel.FATAL, fvSlicer,
 				"action slicing unimplemented for type: " + this);
 		approvedActions.add(this);
 	}

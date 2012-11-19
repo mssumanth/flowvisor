@@ -38,7 +38,8 @@ import org.flowvisor.flows.FlowRewriteDB;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
+//import org.flowvisor.log.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats;
 import org.flowvisor.ofswitch.TopologyController;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFFeaturesReply;
@@ -291,8 +292,8 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 
 	@Override
 	public Collection<Map<String, String>> getLinks() {
-		FVLog.log(LogLevel.DEBUG, null,
-				"API getLinks() by: " + APIUserCred.getUserName());
+		FVLog.log(LogLevel.DEBUG, null, "API getLinks() by: " + 
+					APIUserCred.getUserName());
 		TopologyController topologyController = TopologyController
 				.getRunningInstance();
 		if (topologyController == null)
@@ -307,7 +308,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 	}
 
 	protected List<Map<String, String>> getFakeLinks() {
-		FVLog.log(LogLevel.ALERT, null,
+		FVLog.log(LogLevel.ERROR, null,
 				"API: topology server not running: faking getLinks()");
 		List<String> devices = listDevices();
 		List<Map<String, String>> list = new LinkedList<Map<String, String>>();
@@ -326,8 +327,8 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 
 	@Override
 	public List<String> listDevices() {
-		FVLog.log(LogLevel.DEBUG, null,
-				"API listDevices() by: " + APIUserCred.getUserName());
+		FVLog.log(LogLevel.DEBUG, null, "API listDevices() by: " +
+					APIUserCred.getUserName());
 		FlowVisor fv = FlowVisor.getInstance();
 		// get list from main flowvisor instance
 		List<String> dpids = new ArrayList<String>();
@@ -474,6 +475,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 						"wtf!?: no SLICES subdir found in config");
 			}
 		}
+		FVLog.log(LogLevel.TRACE, null, "FVUserAPIImpl: The list of all slices: "+slices );
 		return slices;
 	}
 
@@ -504,7 +506,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 				map.put("creator", FVConfig.getSliceCreator(sliceName));
 				map.put("drop_policy", FVConfig.getSlicePolicy(sliceName));
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.CRIT, null, "malformed slice: " + e);
+				FVLog.log(LogLevel.FATAL, null, "malformed slice: " + e);
 				e.printStackTrace();
 			}
 		}
@@ -751,7 +753,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			SwitchImpl.getProxy().setFloodPerm(dpid, floodPerm);
 			return true;
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to set floodperm", e.getMessage());
+			FVLog.log(LogLevel.ERROR, null, "Unable to set floodperm", e.getMessage());
 		}
 		return false;
 	}
@@ -770,7 +772,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			return SwitchImpl.getProxy().getFloodPerm(dpid);
 			
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to set floodperm", e.getMessage());
+			FVLog.log(LogLevel.ERROR, null, "Unable to set floodperm", e.getMessage());
 		}
 		return null;
 	}
@@ -801,7 +803,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 		try {
 			return FlowvisorImpl.getProxy().getFloodPerm();
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to get floodperm", e.getMessage());
+			FVLog.log(LogLevel.ERROR, null, "Unable to get floodperm", e.getMessage());
 		}
 		return null;
 	}
@@ -834,7 +836,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 		try {
 			return FlowvisorImpl.getProxy().gettrack_flows();
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to get flow tracking status ", e.getMessage());
+			FVLog.log(LogLevel.ERROR, null, "Unable to get flow tracking status ", e.getMessage());
 		}
 		return null;
 	}

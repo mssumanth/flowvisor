@@ -3,6 +3,9 @@
  */
 package org.flowvisor.classifier;
 
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
+
 
 /**
  * @author capveg
@@ -18,6 +21,7 @@ public class XidPair {
 	}
 
 	public int getXid() {
+		FVLog.log(LogLevel.TRACE, null, "XIDPair: xid is:" + xid);
 		return xid;
 	}
 
@@ -29,6 +33,7 @@ public class XidPair {
 	 * @return the sliceName
 	 */
 	public String getSliceName() {
+		FVLog.log(LogLevel.TRACE, null, "XIDPair: sliceName is:" + sliceName);
 		return sliceName;
 	}
 

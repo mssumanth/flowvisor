@@ -3,6 +3,7 @@
  */
 package org.flowvisor.log;
 
+
 import org.flowvisor.FlowVisor;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
@@ -10,6 +11,7 @@ import org.flowvisor.events.FVEventHandler;
 import org.flowvisor.message.FVFlowMod;
 import org.flowvisor.message.FVMessageFactory;
 import org.openflow.protocol.OFType;
+
 
 /**
  * Static method
@@ -20,7 +22,7 @@ import org.openflow.protocol.OFType;
 public class FVLog {
 	
 	static boolean needsInit = true;
-	static FVLogInterface logger = new AnyLogger();
+	static FVLogInterface logger = new AnyLogger();	
 	static LogLevel threshold = null;
 
 	/**
@@ -33,19 +35,22 @@ public class FVLog {
 	 * @param msgs
 	 *            Log message
 	 */
+	
+	//Sumanth_Why don't we have the class name instead of the event handler?
 	public static synchronized void log(LogLevel level, FVEventHandler source,
 			Object... msgs) {
 		if (needsInit)
 			doInit();
-		if (level.ordinal() <= threshold.ordinal() && (msgs.length > 0)) {
-			StringBuilder stringBuilder = new StringBuilder(msgs[0].toString());
-			for (int i = 1; i < msgs.length; i++){
-				if (msgs[i] != null)
-					stringBuilder.append(msgs[i].toString());
-			}
-
-			logger.log(level, System.currentTimeMillis(), source,
+		if ((threshold != null) && (level != null)){
+			if (level.ordinal() <= threshold.ordinal() && (msgs.length > 0)) {
+				StringBuilder stringBuilder = new StringBuilder(msgs[0].toString());
+				for (int i = 1; i < msgs.length; i++){
+					if (msgs[i] != null)
+						stringBuilder.append(msgs[i].toString());
+				}
+				logger.log(level, System.currentTimeMillis(), source,
 					stringBuilder.toString());
+			}
 		}
 	}
 
@@ -58,14 +63,15 @@ public class FVLog {
 		}
 		boolean needConfigFlush = false;
 		try {
-			if (threshold == null)
+			if (threshold == null){
 				threshold = LogLevel.valueOf(FVConfig
 						.getLogging());
+			}
 		} catch (ConfigError e) {
 			System.err.println("--- Logging threshold"  
-					+ "' not set in config; defaulting to loglevel 'NOTE'");
+					+ " not set in config; defaulting to loglevel 'INFO'");
 			try {
-				FVConfig.setLogging(LogLevel.NOTE.toString());
+				FVConfig.setLogging(LogLevel.INFO.toString());
 				needConfigFlush = true;
 
 			} catch (ConfigError e1) {
@@ -93,6 +99,12 @@ public class FVLog {
 				FVLog.log(level, null, "log level enabled: " + level);
 		}
 	}
+	
+	
+	/*public static synchronized void setDefaultLogger() {
+		FVLog.logger = null;
+		needsInit = true;
+	}*/
 
 	/**
 	 * Change the default logger
@@ -129,18 +141,19 @@ public class FVLog {
 	public static void main(String args[]) {
 		long iterations = 10000000;
 		FVLog.logger = new DevNullLogger();
-		FVLog.log(LogLevel.ALERT, null, "Setting up logging facility");
+		FVLog.log(LogLevel.ERROR, null, "Setting up logging facility");
 		long start1 = System.currentTimeMillis();
 		FVMessageFactory factory = new FVMessageFactory();
 		FVFlowMod fm = (FVFlowMod) factory.getMessage(OFType.FLOW_MOD);
 		for (long it = 0; it < iterations; it++)
-			FVLog.log(LogLevel.MOBUG, null, "LogLevel.INFO test" + " one "
+			FVLog.log(LogLevel.DEBUG, null, "LogLevel.INFO test" + " one "
 					+ " two" + " three " + fm);
 		long stop1 = System.currentTimeMillis();
 		for (long it = 0; it < iterations; it++)
-			FVLog.log(LogLevel.MOBUG, null, "LogLevel.MOBUG test", " one ",
+			FVLog.log(LogLevel.DEBUG, null, "LogLevel.DEBUG test", " one ",
 					" two", " three ", fm);
 		long stop2 = System.currentTimeMillis();
+		//Sumanth_How is this slow and fast as both are running for the same iterations?
 		double slow = iterations * 1.0 / (stop1 - start1);
 		double fast = iterations * 1.0 / (stop2 - stop1);
 		System.out.println("Slow run logs/second: " + slow);

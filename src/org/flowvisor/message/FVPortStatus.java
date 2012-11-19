@@ -43,7 +43,7 @@ public class FVPortStatus extends OFPortStatus implements Classifiable,
 			 */
 			fvClassifier.addPort(this.getDesc());
 		} else {
-			FVLog.log(LogLevel.CRIT, fvClassifier, "unknown reason " + reason
+			FVLog.log(LogLevel.FATAL, fvClassifier, "unknown reason " + reason
 					+ " in port_status msg: " + this);
 		}
 

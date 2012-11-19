@@ -19,7 +19,7 @@ public class FVActionNetworkLayerSource extends OFActionNetworkLayerSource
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
 		// TODO Auto-generated method stub
-		FVLog.log(LogLevel.CRIT, fvSlicer,
+		FVLog.log(LogLevel.FATAL, fvSlicer,
 				"action slicing unimplemented for type: " + this);
 		approvedActions.add(this);
 	}

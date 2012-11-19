@@ -1,5 +1,8 @@
 package org.flowvisor.api;
 
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
+
 
 /**
  * Thread-local list of this User's credentials
@@ -29,6 +32,7 @@ public class APIUserCred {
 	}
 
 	static public String getUserName() {
+		FVLog.log(LogLevel.INFO,null,"APIUserCred: UserName- "+APIUserCred.getThreadCred().userName);
 		return APIUserCred.getThreadCred().userName;
 	}
 
@@ -42,7 +46,7 @@ public class APIUserCred {
 	}
 
 	static public APIUserCred getThreadCred() {
-
+		FVLog.log(LogLevel.TRACE, null, "APIUserCred: getThreadCred" );
 		APIUserCred cred = threadCred.get();
 		if (cred == null) {
 			cred = new APIUserCred();

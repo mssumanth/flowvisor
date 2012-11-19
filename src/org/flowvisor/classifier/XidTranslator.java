@@ -3,6 +3,8 @@
  */
 package org.flowvisor.classifier;
 
+import org.flowvisor.log.FVLog;
+import org.flowvisor.log.LogLevel;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.util.LRULinkedHashMap;
 
@@ -16,7 +18,7 @@ public class XidTranslator {
 	static final int INIT_SIZE = (1 << 12);
 	static final int MAX_SIZE = (1 << 14); // must be larger than the max
 											// lifetime of an XID * rate of
-											// mesgs/sec
+											// msgs/sec
 	int nextID;
 	LRULinkedHashMap<Integer, XidPair> xidMap;
 
@@ -35,6 +37,7 @@ public class XidTranslator {
 		if (nextID < MIN_XID)
 			nextID = MIN_XID;
 		xidMap.put(Integer.valueOf(ret), new XidPair(xid, fvSlicer.getSliceName()));
+		FVLog.log(LogLevel.DEBUG,null,"The Translated xid is: "+ret);
 		return ret;
 	}
 }

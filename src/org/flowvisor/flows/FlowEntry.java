@@ -24,7 +24,7 @@ import org.openflow.util.HexString;
 /**
  * @author capveg Holds data
  *         "IF packets match this RULE, THEN perform list of ACTIONS on it" In
- *         addition to normal openflow flow entry symantics, this flow entry
+ *         addition to normal openflow flow entry semantics, this flow entry
  *         also matches on dpid
  */
 public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
@@ -522,6 +522,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 	 * @return true == yes, false == no
 	 */
 	public boolean hasPermissions(String sliceName, int perms) {
+		FVLog.log(LogLevel.TRACE, null, "FlowEntry: hasPermissions");
 		for (OFAction ofaction : this.actionsList) {
 			if (ofaction instanceof SliceAction) {
 				SliceAction sliceAction = (SliceAction) ofaction;

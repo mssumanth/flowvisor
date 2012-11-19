@@ -91,6 +91,7 @@ public class FlowSpaceImpl implements FlowSpace {
 	 */
 	@Override
 	public FlowMap getFlowMap() throws ConfigError {
+		FVLog.log(LogLevel.TRACE, null, "FlowSpaceImpl: getFlowMap");
 		Connection conn = null;
 		PreparedStatement ps = null;
 		PreparedStatement actions = null;
@@ -162,6 +163,7 @@ public class FlowSpaceImpl implements FlowSpace {
 
 	@Override
 	public void setFlowMap(FlowMap map) throws ConfigError {
+		FVLog.log(LogLevel.TRACE, null, "FlowSpaceImpl: setFlowMap");
 		SortedSet<FlowEntry> rules = map.getRules();
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -408,7 +410,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			ps.setInt(1, id);
 			int affected = -1;
 			if ((affected = ps.executeUpdate()) != 1) {
-				FVLog.log(LogLevel.ALERT, null, "Failed to delete rule with id ", id, " : rows affected ", affected);
+				FVLog.log(LogLevel.ERROR, null, "Failed to delete rule with id ", id, " : rows affected ", affected);
 				throw new ConfigError("Unable to remove rule with id " + id);
 			}
 		} catch (SQLException e) {
@@ -539,7 +541,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			}
 			writer.endArray();
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.CRIT, null, "Failed to write flowspace config : " + e.getMessage());
+			FVLog.log(LogLevel.FATAL, null, "Failed to write flowspace config : " + e.getMessage());
 		} finally {
 			close(set);
 			close(ps);

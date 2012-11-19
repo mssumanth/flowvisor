@@ -33,11 +33,11 @@ public class FVTimer {
 	}
 
 	public void addTimer(FVTimerEvent e) {
-		FVLog.log(LogLevel.MOBUG, e.getSrc(), "Scheduleing event ", e.getId()
+		FVLog.log(LogLevel.DEBUG, e.getSrc(), "Scheduleing event ", e.getId()
 				+ " at t=" + new Time(System.currentTimeMillis())
 				+ " to happen at " + new Time(e.getExpireTime()));
 		pq.add(e);
-		FVLog.log(LogLevel.MOBUG, null, "Events in timer queue: ", pq.size());
+		FVLog.log(LogLevel.DEBUG, null, "Events in timer queue: ", pq.size());
 	}
 
 	public void logEventQueue(String prefix, LogLevel level) {
@@ -53,12 +53,13 @@ public class FVTimer {
 	 * MIN_TIMEOUT Else, return the time in milliseconds until the next event
 	 */
 	public long processEvent() throws UnhandledEvent {
+		FVLog.log(LogLevel.TRACE,null,"FVTimer: processEvent");
 		long now = System.currentTimeMillis();
 		FVTimerEvent e = this.pq.peek();
 
 		while ((e != null) && (e.getExpireTime() <= now)) {
 			pq.remove();
-			FVLog.log(LogLevel.MOBUG, e.getDst(), "processing event ", e
+			FVLog.log(LogLevel.DEBUG, e.getDst(), "processing event ", e
 					.getId(), " scheduling err = ", (now - e.getExpireTime()));
 			long startCounter = System.currentTimeMillis();
 			e.getDst().handleEvent(e);
@@ -84,6 +85,7 @@ public class FVTimer {
 		Iterator<FVTimerEvent> it = pq.iterator();
 		for (e = it.next(); it.hasNext(); e = it.next()) {
 			if (e.getID() == id) {
+				FVLog.log(LogLevel.DEBUG, null, "FVTimer: removeTimer - cancelling the timer "+ e.getID());
 				pq.remove(e);
 				return true;
 			}

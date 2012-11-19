@@ -16,9 +16,10 @@ public class FVEventUtils {
 	 */
 	static public void starvationTest(long startCounter,
 			FVEventHandler handler, FVEvent e) {
+		FVLog.log(LogLevel.TRACE,null,"FVEventUtils: Doing a starvation test");
 		long stopCounter = System.currentTimeMillis();
 		if ((stopCounter - startCounter) > FVConfig.DelayWarning) {
-			FVLog.log(LogLevel.ALERT, e.getDst(),
+			FVLog.log(LogLevel.ERROR, e.getDst(),
 					"STARVING: handling event took "
 							+ (stopCounter - startCounter) + "ms: " + e);
 		}

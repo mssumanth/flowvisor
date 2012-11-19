@@ -57,6 +57,7 @@ public class APIAuth implements AuthenticationHandler {
 	}
 
 	public static boolean isAuthorized(String user, String passwd, String request){
+		FVLog.log(LogLevel.TRACE,null,"APIAuth: Entering isAuthorized");
 		APIUserCred.setUserName(user);
 		try {
 			if (user == null)
@@ -76,7 +77,7 @@ public class APIAuth implements AuthenticationHandler {
 		FVLog.log(LogLevel.DEBUG, null, "API auth " + request + " for user '"
 				+ user + "'");
 		// HACK to tie this thread to the user
-
+		FVLog.log(LogLevel.TRACE,null,"APIAuth: Exiting isAuthorized");
 		return true;
 	}
 
@@ -126,7 +127,7 @@ public class APIAuth implements AuthenticationHandler {
 		} catch (ConfigError e) {
 			String err = "server error: no " + elm + " found(!!) for user "
 					+ user;
-			FVLog.log(LogLevel.ALERT, null, err);
+			FVLog.log(LogLevel.ERROR, null, err);
 			throw new AuthFailException(err);
 		}
 	}
@@ -155,6 +156,7 @@ public class APIAuth implements AuthenticationHandler {
 				return true;
 			try {
 				user = FVConfig.getSliceCreator(sliceName); 
+				FVLog.log(LogLevel.DEBUG, null, "APIAuth: transitivelyCreated- The slice "+ sliceName + " was created by "+ user );
 			} catch (ConfigError e) {
 				// FIXME: this config format is stupid
 				e.printStackTrace();

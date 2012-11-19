@@ -11,7 +11,7 @@ CREATE TABLE Flowvisor (
   track_flows BOOLEAN   DEFAULT false ,
   stats_desc_hack BOOLEAN  DEFAULT false ,
   run_topology_server BOOLEAN DEFAULT false ,
-  logging VARCHAR(45)  DEFAULT 'NOTE' ,
+  logging VARCHAR(45)  DEFAULT 'INFO' ,
   log_ident VARCHAR(45)  DEFAULT 'flowvisor' ,
   log_facility VARCHAR(45)  DEFAULT 'LOG_LOCAL7' ,
   version VARCHAR(45)  DEFAULT 'flowvisor-0.9' ,

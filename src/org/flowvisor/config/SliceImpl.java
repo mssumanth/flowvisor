@@ -303,11 +303,13 @@ public class SliceImpl implements Slice {
 	
 	@Override
 	public String getPasswdElm(String sliceName, String elm) throws ConfigError {
+		FVLog.log(LogLevel.TRACE, null, "SliceImpl: getPasswdElm");
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet set = null;
 		try {
 			String stmt = GPASSELM.replaceFirst("<REPLACEME>", elm);
+			FVLog.log(LogLevel.TRACE, null, "stmt " + stmt);
 			conn = settings.getConnection();
 			ps = conn.prepareStatement(stmt);
 			ps.setString(1, sliceName);
@@ -566,6 +568,7 @@ public class SliceImpl implements Slice {
 	}
 
 	public static Slice getProxy() {
+		FVLog.log(LogLevel.TRACE,null,"SliceImpl: Inside getProxy");
 		return (Slice) FVConfigurationController.instance()
 		.getProxy(getInstance());
 	}
