@@ -529,7 +529,8 @@ public class SliceImpl implements Slice {
 			ps = conn.prepareStatement(CONTCHECK);
 			ps.setString(1, controller_hostname);
 			ps.setInt(2, controller_port);
-			if (!ps.execute())
+			set = ps.executeQuery();
+			if (set.next())
 				throw new DuplicateControllerException(controller_hostname, controller_port, sliceName, null);
             close(conn);
 			conn = settings.getConnection();
@@ -716,6 +717,31 @@ public class SliceImpl implements Slice {
 			close(set);
 			close(ps);
 			close(conn);	
+		}
+		
+	}
+
+	private void processAlter(String alter) {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = settings.getConnection();
+			ps = conn.prepareStatement(alter);
+			ps.execute();
+		} catch (SQLException e) {
+			throw new RuntimeException("Table alteration failed. Quitting. " + e.getMessage());
+		} finally {
+			close(ps);
+			close(conn);
+		}
+	}
+
+	@Override
+	public void updateDB(int version) {
+		FVLog.log(LogLevel.INFO, null, "Updating Slice database table.");
+		if (version == 0) {
+			processAlter("ALTER TABLE Slice ADD COLUMN " + FMLIMIT + " INT NOT NULL DEFAULT -1");
+			version++;
 		}
 		
 	}
