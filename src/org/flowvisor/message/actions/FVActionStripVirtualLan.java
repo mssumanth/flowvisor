@@ -6,6 +6,7 @@ import java.util.List;
 import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
 import org.flowvisor.flows.FlowEntry;
+import org.flowvisor.flows.FlowSpaceRuleStore;
 import org.flowvisor.flows.SliceAction;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
@@ -25,7 +26,7 @@ public class FVActionStripVirtualLan extends OFActionStripVirtualLan implements
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
 		FVMatch neoMatch = new FVMatch(match);
-		//neoMatch.setDataLayerVirtualLan(FlowSpaceRuleStore.ANY_VLAN_ID);
+		neoMatch.setDataLayerVirtualLan(FlowSpaceRuleStore.ANY_VLAN_ID);
 
 		List<FlowEntry> flowEntries = fvClassifier.getSwitchFlowMap().matches(fvClassifier.getDPID(), neoMatch);
 
