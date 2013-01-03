@@ -85,9 +85,7 @@ public class FlowVisor {
 	 *            the configFile to set
 	 */
 	public void setConfigFile(String configFile) {
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Setting ConfigFile" + configFile);
 		this.configFile = configFile;
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Exited setConfigFile");
 	}
 
 	
@@ -106,13 +104,11 @@ public class FlowVisor {
 	 *            the port to set
 	 */
 	public void setPort(int port) {
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Entered setPort");
 		try {
 			FlowvisorImpl.getProxy().setAPIWSPort(port);
 		} catch (ConfigError e) {
 			FVLog.log(LogLevel.WARN, null, "Failed to set api port");
 		}
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Exited setPort");
 	}
 
 	public void setJettyPort(int port){
@@ -149,12 +145,13 @@ public class FlowVisor {
 	}
 
 	public void run() throws ConfigError, IOException, UnhandledEvent {
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Entered run");
 		FlowVisor.setInstance(this);
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 				// init polling loop
+		
 		FVLog.log(LogLevel.INFO, null, "initializing poll loop");
 		FVEventLoop pollLoop = new FVEventLoop();
+		
 		FVLog.log(LogLevel.INFO,null,"FlowVisor: spawning Jetty Server");
 		JettyServer.spawnJettyServer(FVConfig.getJettyPort());//jettyPort);
 		
@@ -220,7 +217,6 @@ public class FlowVisor {
 			try {
 				// load config from file
 				if (fv.configFile != null){
-					FVLog.log(LogLevel.INFO,null,"FlowVisor: Main - reading from the config file");
 					FVConfig.readFromFile(fv.configFile);
 				}
 				else {
@@ -257,7 +253,6 @@ public class FlowVisor {
 	}
 
 	private void parseArgs(String[] args) {
-		
 		SimpleCLI cmd = null;
 		try {
 			cmd = SimpleCLI.parse(options, args);
@@ -268,11 +263,12 @@ public class FlowVisor {
 		if (cmd == null)
 			usage("need to specify arguments");
 		int i = cmd.getOptind();
-		if (i >= args.length)
+		if (i >= args.length){
 			setConfigFile(null);
-		else
+		}
+		else{
 			setConfigFile(args[i]);
-
+		}
 		if (cmd.hasOption("d")) {
 			FVLog.setThreshold(LogLevel.valueOf(cmd.getOptionValue("d")));
 			System.err.println("Set default logging threshold to "

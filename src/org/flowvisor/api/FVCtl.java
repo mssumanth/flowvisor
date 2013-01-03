@@ -269,7 +269,6 @@ public class FVCtl {
 		return trustAllCerts;
 	}
 	public void installDumbTrust() {
-		//FVLog.log(LogLevel.TRACE, null, "FlowVisorAuthenticator: Installing Dumb Trust" );
 		TrustManager[] trustAllCerts = getTrustAllManager();
 		try {
 			// Install the all-trusting trust manager

@@ -94,9 +94,6 @@ public class FVConfig {
 	 */
 	public static synchronized void readFromFile(String filename)
 			throws FileNotFoundException {
-		
-		FVLog.log(LogLevel.TRACE,null,"FVConfig: Entered readFromFile");
-		
 		JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(new FileInputStream(filename))));
 		reader.setLenient(true);
 		try {
@@ -170,7 +167,6 @@ public class FVConfig {
 	 * @throws IOException 
 	 */
 	public static synchronized void writeToFile(String filename) throws FileNotFoundException  {
-		FVLog.log(LogLevel.TRACE, null, "FVConfig: writeToFile");
 		JsonWriter writer = new JsonWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename))));
 		writer.setIndent("   ");
 		try {
@@ -348,7 +344,6 @@ public class FVConfig {
 	}
 	
 	public static boolean getFlowTracking() throws ConfigError {
-		FVLog.log(LogLevel.TRACE, null, "Getting Track flows");
 		Flowvisor proxy = FlowvisorImpl.getProxy();
 		return proxy.gettrack_flows();
 	}

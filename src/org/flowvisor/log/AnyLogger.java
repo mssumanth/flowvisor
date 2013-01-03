@@ -35,8 +35,7 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 	
 	@Override
 	public void log(LogLevel level, long time, FVEventHandler source, String msg) {
-		//Sumanth_ Does this "source": return only whether the event is being generated from
-		//Classifier or Slicer or can we make it give the actual class name too?
+
 		// ALI addition:
         String srcString = null;
         if (source != null)
@@ -94,8 +93,6 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 
 	@Override
 	public String initialize() throws SyslogRuntimeException {
-		
-		//Sumanth: What should the protocol be changed to?
 		if (this.protocol == null)
 			this.protocol = TCP;//IS this ok?
 		

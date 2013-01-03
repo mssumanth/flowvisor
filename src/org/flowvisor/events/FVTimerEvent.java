@@ -37,7 +37,6 @@ public class FVTimerEvent extends FVEvent implements Comparable<FVTimerEvent> {
 		this.arg = arg;
 		synchronized (FVTimerEvent.class) {
 			this.id = ID++;
-			FVLog.log(LogLevel.TRACE,null,"ID is: ",this.id);
 		}
 	}
 

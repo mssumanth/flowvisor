@@ -301,7 +301,6 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				SwitchImpl.addListener(dpid, this);
 			else
 				FlowvisorImpl.addListener(this);
-			//FVConfig.watch(this, entry);
 		} catch (ConfigError e) {
 			// do nothing if no entry
 		}

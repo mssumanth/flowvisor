@@ -106,7 +106,6 @@ public class FVEventLoop {
 	 *
 	 */
 	public void doEventLoop() throws IOException, UnhandledEvent {
-		FVLog.log(LogLevel.DEBUG,null, "Main top level I/O loop");
 		this.thread_id = Thread.currentThread().getId();
 		while (!shouldStop) {
 			long nextTimerEvent;

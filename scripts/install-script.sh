@@ -151,7 +151,9 @@ LIBS="\
     derbytools.jar
     servlet-api-2.5.jar \
     jna.jar \
-    log4j-1.2.16.jar \
+    log4j-1.2.17.jar \
+    slf4j-log4j12-1.7.2.jar \
+    slf4j-api-1.7.2.jar \
     syslog4j-0.9.46-bin.jar
     "
 

@@ -699,7 +699,6 @@ public class FlowvisorImpl implements Flowvisor {
 	}
 	
 	public static Flowvisor getProxy() {
-		//FVLog.log(LogLevel.TRACE,null,"FlowvisorImpl: Inside getProxy");
 		return (Flowvisor) FVConfigurationController.instance()
 		.getProxy(getInstance());
 	}

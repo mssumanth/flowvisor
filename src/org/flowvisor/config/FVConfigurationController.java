@@ -57,12 +57,10 @@ public class FVConfigurationController {
 	}
 	
 	public FVAppConfig getProxy(FVAppConfig instance) {
-		//FVLog.log(LogLevel.TRACE,null,"FVConfigurationController: Entering getProxy");
 		instance.setSettings(settings);
 		FVAppConfig configProxy = (FVAppConfig) Proxy.newProxyInstance(getClass().getClassLoader(), 
 				new Class[] { FVAppConfig.class, instance.getClass().getInterfaces()[0]},
-				new FVConfigProxy(instance));
-		//FVLog.log(LogLevel.TRACE,null,"FVConfigurationController: Exiting getProxy");	
+				new FVConfigProxy(instance));	
 		return configProxy;
 	}
 	

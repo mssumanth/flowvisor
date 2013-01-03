@@ -309,7 +309,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	 */
 
 	public static boolean isConfigured() {
-		FVLog.log(LogLevel.TRACE, null, "TopologyController: Checking of FV is configured to do topology" +
+		FVLog.log(LogLevel.TRACE, null, "TopologyController: Checking if FV is configured to do topology" +
 				"discovery");
 		try {
 			return FVConfig.getTopologyServer();

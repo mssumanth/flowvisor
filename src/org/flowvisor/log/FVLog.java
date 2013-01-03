@@ -36,11 +36,12 @@ public class FVLog {
 	 *            Log message
 	 */
 	
-	//Sumanth_Why don't we have the class name instead of the event handler?
 	public static synchronized void log(LogLevel level, FVEventHandler source,
 			Object... msgs) {
-		if (needsInit)
+		if (needsInit){
 			doInit();
+		}
+
 		if ((threshold != null) && (level != null)){
 			if (level.ordinal() <= threshold.ordinal() && (msgs.length > 0)) {
 				StringBuilder stringBuilder = new StringBuilder(msgs[0].toString());
@@ -56,6 +57,7 @@ public class FVLog {
 
 	private static void doInit() {
 		needsInit = false;
+
 		// hack around setup if we don't want any logging
 		if (FVLog.logger instanceof DevNullLogger) {
 			threshold = LogLevel.FATAL;
@@ -88,15 +90,17 @@ public class FVLog {
 			logger = new StderrLogger();
 			logger.init();
 		}
-		System.err.println("--- Setting logging level to " + threshold);
+		//System.err.println("--- Setting logging level to " + threshold);
 		if (needConfigFlush) {
 			FlowVisor fv = FlowVisor.getInstance();
 			if (fv != null)
 				fv.checkPointConfig();
 		}
+
 		for (LogLevel level : LogLevel.class.getEnumConstants()) {
-			if (level != LogLevel.FATAL) // fatal gets broadcasted to console
+			if (level != LogLevel.FATAL){ // fatal gets broadcasted to console
 				FVLog.log(level, null, "log level enabled: " + level);
+			}
 		}
 	}
 	
@@ -153,7 +157,6 @@ public class FVLog {
 			FVLog.log(LogLevel.DEBUG, null, "LogLevel.DEBUG test", " one ",
 					" two", " three ", fm);
 		long stop2 = System.currentTimeMillis();
-		//Sumanth_How is this slow and fast as both are running for the same iterations?
 		double slow = iterations * 1.0 / (stop1 - start1);
 		double fast = iterations * 1.0 / (stop2 - stop1);
 		System.out.println("Slow run logs/second: " + slow);

@@ -309,7 +309,6 @@ public class SliceImpl implements Slice {
 		ResultSet set = null;
 		try {
 			String stmt = GPASSELM.replaceFirst("<REPLACEME>", elm);
-			FVLog.log(LogLevel.TRACE, null, "stmt " + stmt);
 			conn = settings.getConnection();
 			ps = conn.prepareStatement(stmt);
 			ps.setString(1, sliceName);
