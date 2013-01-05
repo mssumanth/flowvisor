@@ -20,7 +20,6 @@ public class FVIOEvent extends FVEvent {
 
 	public FVIOEvent(SelectionKey sk, FVEventHandler src, FVEventHandler dst) {
 		super(src, dst);
-		FVLog.log(LogLevel.TRACE, null, "FVIOEvent constructor");
 		this.sk = sk;
 	}
 
