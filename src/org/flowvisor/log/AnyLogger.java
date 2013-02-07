@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.flowvisor.events.FVEventHandler;
 import org.productivity.java.syslog4j.SyslogRuntimeException;
 import org.productivity.java.syslog4j.impl.log4j.Syslog4jAppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 
 public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterface {
 	
@@ -30,7 +32,18 @@ public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterfac
 		return false;
 	}
 	
-	
+	public static void setThreshold() {
+		if (logger.isTraceEnabled())
+			FVLog.setThreshold(LogLevel.TRACE);
+		else if (logger.isDebugEnabled())
+			FVLog.setThreshold(LogLevel.DEBUG);
+		else if (logger.isInfoEnabled())
+			FVLog.setThreshold(LogLevel.INFO);		
+		else if (logger.isWarnEnabled())
+				FVLog.setThreshold(LogLevel.WARN);		
+		else if (logger.isErrorEnabled())
+			FVLog.setThreshold(LogLevel.ERROR);
+	}
 	
 	
 	@Override

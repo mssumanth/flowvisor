@@ -4,6 +4,8 @@
 package org.flowvisor.log;
 
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.flowvisor.FlowVisor;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
@@ -24,6 +26,9 @@ public class FVLog {
 	static boolean needsInit = true;
 	static FVLogInterface logger = new AnyLogger();	
 	static LogLevel threshold = null;
+	
+	// A boolean variable is used to determine if the log level is being set using the cmd line with the "-d option."
+	static boolean cmdLog = false;
 
 	/**
 	 * Wrapper around the default logger
@@ -64,7 +69,7 @@ public class FVLog {
 			return;
 		}
 		boolean needConfigFlush = false;
-		try {
+		/*try {
 			if (threshold == null){
 				threshold = LogLevel.valueOf(FVConfig
 						.getLogging());
@@ -80,9 +85,25 @@ public class FVLog {
 				throw new RuntimeException(e1);
 			}
 			threshold = LogLevel.DEBUG;
-		}
+		}*/
+		
 		try {
-			logger.init();
+				logger.init();
+				
+				/* If the threshold level is set to null, then the log level is read from the fvlog.config file
+				 * This is a changed functionality. Earlier was being read from the config.json file.
+				 */
+				if (threshold == null){
+					AnyLogger.setThreshold();
+				}
+				
+				/* If the log level is being set from the cmd line using the -d option, then the root logger level is set to 'TRACE',
+				 * which is the highest logging level such that the log  statements can be controlled using threshold level which is 
+				 * set by the level specified after the -d in the cmd line and is used in the log function.
+				 */
+				if (cmdLog == true)
+					LogManager.getRootLogger().setLevel((Level)Level.TRACE);
+
 		} catch (UnsatisfiedLinkError e) {
 			System.err
 					.println("Unable to load default logger; failing over to stderr: "
@@ -162,5 +183,9 @@ public class FVLog {
 		System.out.println("Slow run logs/second: " + slow);
 		System.out.println("Fast run logs/second: " + fast);
 		System.out.println("Difference: " + fast / slow);
+	}
+
+	public static void setCmdLog() {
+		cmdLog = true;
 	}
 }
