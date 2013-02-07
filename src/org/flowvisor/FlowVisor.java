@@ -270,6 +270,7 @@ public class FlowVisor {
 			setConfigFile(args[i]);
 		}
 		if (cmd.hasOption("d")) {
+			FVLog.setCmdLog();
 			FVLog.setThreshold(LogLevel.valueOf(cmd.getOptionValue("d")));
 			System.err.println("Set default logging threshold to "
 					+ FVLog.getThreshold());
