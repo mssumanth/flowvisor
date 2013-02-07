@@ -8,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.flowvisor.events.FVEventHandler;
 import org.productivity.java.syslog4j.SyslogRuntimeException;
 import org.productivity.java.syslog4j.impl.log4j.Syslog4jAppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 
 public class AnyLogger extends Syslog4jAppenderSkeleton implements FVLogInterface {
 	
