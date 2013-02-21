@@ -5,8 +5,10 @@ import java.util.Set;
 
 import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.OFMatch;
@@ -24,6 +26,8 @@ import org.openflow.protocol.action.OFActionOutput;
 
 public class FVActionOutput extends OFActionOutput implements SlicableAction,
 		Cloneable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVActionOutput.class);
 
 	@Override
 	public void slice(List<OFAction> approvedActions, OFMatch match,
@@ -54,7 +58,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 				throw new ActionDisallowedException("in port not in slice"
 						+ in_port, OFBadActionCode.OFPBAC_EPERM);
 		} else {
-			FVLog.log(LogLevel.FATAL, fvSlicer,
+			logger.error(fvSlicer.getName(),
 					"action slicing unimplemented for type: " + this);
 			approvedActions.add(this);
 		}
@@ -83,7 +87,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 					approvedActions.add(this);
 					return;
 				} else {
-					FVLog.log(LogLevel.DEBUG, fvClassifier,
+					logger.debug(fvClassifier.getName(),
 							"slice has no flood perms: "
 									+ fvSlicer.getSliceName() + "!='"
 									+ fvClassifier.getFloodPermsSlice() + "'");
@@ -119,7 +123,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 
 	private void turnOffOutOfSliceFloodBits(FVSlicer fvSlicer,
 			FVClassifier fvClassifier) {
-		FVLog.log(LogLevel.ERROR, fvClassifier,
+		logger.error(fvClassifier.getName(),
 				"Would be turning off flooding ports for slice "
 						+ fvSlicer.getSliceName() + " but its NOT IMPLEMENTED");
 		/**

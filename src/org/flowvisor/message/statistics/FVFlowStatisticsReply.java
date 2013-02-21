@@ -1,8 +1,10 @@
 package org.flowvisor.message.statistics;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVMessageUtil;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFMessage;
@@ -10,11 +12,13 @@ import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 
 public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 		SlicableStatistic, ClassifiableStatistic {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFlowStatisticsReply.class);
 
 	@Override
 	public void sliceFromController(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		FVLog.log(LogLevel.WARN, fvSlicer, "dropping unexpected msg: " + msg);
+		logger.warn(fvSlicer.getName(), "dropping unexpected msg: " + msg);
 	}
 
 	/**
@@ -28,7 +32,7 @@ public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 		// TODO: serve this from cache?
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
 		if (fvSlicer == null)
-			FVLog.log(LogLevel.WARN, fvClassifier,
+			logger.warn(fvClassifier.getName(),
 					"dropping unclassifiable msg: " + msg);
 		else {
 			fvSlicer.sendMsg(msg, fvClassifier);

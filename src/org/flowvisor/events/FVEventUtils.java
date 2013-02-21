@@ -1,11 +1,13 @@
 package org.flowvisor.events;
 
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FVEventUtils {
 
+	final static Logger logger = LoggerFactory.getLogger(FVEventUtils.class);
 	/**
 	 * Test to see if more than FVConfig.DelayWarning ms have passed, and if so,
 	 * issue a warning log msg
@@ -16,10 +18,9 @@ public class FVEventUtils {
 	 */
 	static public void starvationTest(long startCounter,
 			FVEventHandler handler, FVEvent e) {
-		FVLog.log(LogLevel.TRACE,null,"FVEventUtils: Doing a starvation test");
 		long stopCounter = System.currentTimeMillis();
 		if ((stopCounter - startCounter) > FVConfig.DelayWarning) {
-			FVLog.log(LogLevel.ERROR, e.getDst(),
+			logger.error(e.getDst().getName()+
 					"STARVING: handling event took "
 							+ (stopCounter - startCounter) + "ms: " + e);
 		}

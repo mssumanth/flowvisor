@@ -12,7 +12,7 @@ import org.flowvisor.exceptions.MalformedFlowChange;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
 import org.flowvisor.openflow.protocol.FVMatch;
-//import org.openflow.protocol.OFMatch;
+
 import org.openflow.protocol.action.*;
 import org.openflow.util.HexString;
 

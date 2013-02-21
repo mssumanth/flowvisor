@@ -7,8 +7,9 @@ import java.util.PriorityQueue;
 import org.flowvisor.events.FVEventUtils;
 import org.flowvisor.events.FVTimerEvent;
 import org.flowvisor.exceptions.UnhandledEvent;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /***
  * A priority queue of timer events does NOT actually call events directly.
@@ -25,6 +26,8 @@ public class FVTimer {
 	public static final long MIN_TIMEOUT = 1; // timeout == 0 implies infinite!
 
 	PriorityQueue<FVTimerEvent> pq;
+	
+	final static Logger logger = LoggerFactory.getLogger(FVTimer.class);
 
 	public FVTimer() {
 		pq = new PriorityQueue<FVTimerEvent>();
@@ -33,18 +36,18 @@ public class FVTimer {
 	}
 
 	public void addTimer(FVTimerEvent e) {
-		FVLog.log(LogLevel.DEBUG, e.getSrc(), "Scheduleing event ", e.getId()
+		logger.debug(e.getSrc().getName()+ "Scheduleing event "+ e.getId()
 				+ " at t=" + new Time(System.currentTimeMillis())
 				+ " to happen at " + new Time(e.getExpireTime()));
 		pq.add(e);
-		FVLog.log(LogLevel.DEBUG, null, "Events in timer queue: ", pq.size());
+		logger.debug("Events in timer queue: "+ pq.size());
 	}
 
-	public void logEventQueue(String prefix, LogLevel level) {
+	/*public void logEventQueue(String prefix, LogLevel level) {
 		for (FVTimerEvent e : this.pq) {
 			FVLog.log(level, null, prefix + " " + e);
 		}
-	}
+	}*/
 
 	/***
 	 * Compare the current wall clock time to the next event in the queue. If
@@ -53,14 +56,12 @@ public class FVTimer {
 	 * MIN_TIMEOUT Else, return the time in milliseconds until the next event
 	 */
 	public long processEvent() throws UnhandledEvent {
-		FVLog.log(LogLevel.TRACE,null,"FVTimer: processEvent");
 		long now = System.currentTimeMillis();
 		FVTimerEvent e = this.pq.peek();
 
 		while ((e != null) && (e.getExpireTime() <= now)) {
 			pq.remove();
-			FVLog.log(LogLevel.DEBUG, e.getDst(), "processing event ", e
-					.getId(), " scheduling err = ", (now - e.getExpireTime()));
+			logger.debug(e.getDst().getName()+ "processing event " + e.getId()+ " scheduling err = "+ (now - e.getExpireTime()));
 			long startCounter = System.currentTimeMillis();
 			e.getDst().handleEvent(e);
 			FVEventUtils.starvationTest(startCounter, e.getDst(), e);
@@ -85,7 +86,7 @@ public class FVTimer {
 		Iterator<FVTimerEvent> it = pq.iterator();
 		for (e = it.next(); it.hasNext(); e = it.next()) {
 			if (e.getID() == id) {
-				FVLog.log(LogLevel.DEBUG, null, "FVTimer: removeTimer - cancelling the timer "+ e.getID());
+				logger.debug("FVTimer: removeTimer - cancelling the timer "+ e.getID());
 				pq.remove(e);
 				return true;
 			}

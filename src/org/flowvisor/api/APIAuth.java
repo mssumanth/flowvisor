@@ -14,10 +14,12 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcRequest;
 import org.apache.xmlrpc.common.XmlRpcHttpRequestConfig;
 import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping.AuthenticationHandler;
+
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Figure out if this request should be allowed or not
@@ -26,6 +28,8 @@ import org.flowvisor.log.LogLevel;
  *
  */
 public class APIAuth implements AuthenticationHandler {
+	
+	final static Logger logger = LoggerFactory.getLogger(APIAuth.class);
 
 	static class AuthFailException extends Exception {
 		/**
@@ -57,7 +61,6 @@ public class APIAuth implements AuthenticationHandler {
 	}
 
 	public static boolean isAuthorized(String user, String passwd, String request){
-		FVLog.log(LogLevel.TRACE,null,"APIAuth: Entering isAuthorized");
 		APIUserCred.setUserName(user);
 		try {
 			if (user == null)
@@ -70,14 +73,12 @@ public class APIAuth implements AuthenticationHandler {
 
 		} catch (AuthFailException e) {
 			String err = "API auth failed for: " + request + "::" + e;
-			FVLog.log(LogLevel.WARN, null, err);
+			logger.warn(err);
 			// throw new XmlRpcException(err);
 			return false;
 		}
-		FVLog.log(LogLevel.DEBUG, null, "API auth " + request + " for user '"
-				+ user + "'");
+		logger.debug("API auth" + request + " for user '" + user + "'");
 		// HACK to tie this thread to the user
-		FVLog.log(LogLevel.TRACE,null,"APIAuth: Exiting isAuthorized");
 		return true;
 	}
 
@@ -127,7 +128,7 @@ public class APIAuth implements AuthenticationHandler {
 		} catch (ConfigError e) {
 			String err = "server error: no " + elm + " found(!!) for user "
 					+ user;
-			FVLog.log(LogLevel.ERROR, null, err);
+			logger.error(err);
 			throw new AuthFailException(err);
 		}
 	}
@@ -143,7 +144,7 @@ public class APIAuth implements AuthenticationHandler {
 	 * @param changerSlice
 	 *            the slice trying to perform a change
 	 * @param sliceName
-	 *            the slice being changes
+	 *            the slice being changed
 	 * @return
 	 */
 	public static boolean transitivelyCreated(String changerSlice,
@@ -156,7 +157,7 @@ public class APIAuth implements AuthenticationHandler {
 				return true;
 			try {
 				user = FVConfig.getSliceCreator(sliceName); 
-				FVLog.log(LogLevel.DEBUG, null, "APIAuth: transitivelyCreated- The slice "+ sliceName + " was created by "+ user );
+				logger.debug("APIAuth: transitivelyCreated- The slice "+ sliceName + " was created by "+ user );
 			} catch (ConfigError e) {
 				// FIXME: this config format is stupid
 				e.printStackTrace();
@@ -180,7 +181,7 @@ public class APIAuth implements AuthenticationHandler {
 			IOException {
 		if (args.length != 2) {
 			System.err.println("Usage: APIAuth config.xml sliceName");
-			System.err.println("      change the passwd for a given slice");
+			System.err.println("change the passwd for a given slice");
 			System.exit(1);
 		}
 		String filename = args[0];

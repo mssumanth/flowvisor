@@ -12,8 +12,10 @@ import org.flowvisor.classifier.XidPair;
 import org.flowvisor.classifier.XidTranslator;
 import org.flowvisor.events.FVEventHandler;
 import org.flowvisor.exceptions.ActionDisallowedException;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.actions.SlicableAction;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFError;
@@ -33,6 +35,8 @@ import org.openflow.protocol.action.OFAction;
  */
 public class FVMessageUtil {
 
+	final static Logger logger = LoggerFactory.getLogger(FVMessageUtil.class);
+	
 	/**
 	 * Translate the XID of a message from controller-unique to switch unique
 	 * Also, record the <oldXid,FVSlicer> mapping so we can reverse this later
@@ -43,7 +47,7 @@ public class FVMessageUtil {
 	 */
 	static public void translateXid(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		FVLog.log(LogLevel.DEBUG, null, "FVMessageUtil: translatingXid from controller-unique to switch-unique");
+		logger.debug("FVMessageUtil: translatingXid from controller-unique to switch-unique");
 		XidTranslator xidTranslator = fvClassifier.getXidTranslator();
 		int newXid = xidTranslator.translate(msg.getXid(), fvSlicer);
 		msg.setXid(newXid);
@@ -65,7 +69,7 @@ public class FVMessageUtil {
 			return null;
 		msg.setXid(pair.getXid());
 		String sliceName = pair.getSliceName();
-		FVLog.log(LogLevel.DEBUG, null, "FVMessageUtil: xid is- " + pair.getXid()
+		logger.debug("FVMessageUtil: xid is- " + pair.getXid()
 				+ "sliceName is- "+ pair.getSliceName());
 		return fvClassifier.getSlicerByName(sliceName);
 	}
@@ -88,7 +92,6 @@ public class FVMessageUtil {
 	static public List<OFAction> approveActions(List<OFAction> actionList,
 			OFMatch match, FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
-		FVLog.log(LogLevel.TRACE,null,"FVMessageUtil: approveActions");
 		List<OFAction> approvedList = new ArrayList<OFAction>();
 
 		if (actionList == null)
@@ -113,18 +116,18 @@ public class FVMessageUtil {
 	}
 
 	public static void dropUnexpectedMesg(OFMessage msg, FVEventHandler handler) {
-		FVLog.log(LogLevel.WARN, handler, "dropping unexpected msg: " + msg);
+		logger.warn(handler.getName()+ "dropping unexpected msg: " + msg);
 	}
 
 	public static void untranslateXidAndSend(OFMessage msg,
 			FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
 		if (fvSlicer == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
+			logger.warn(fvClassifier.getName(),
 					"dropping msg with unknown xid: " + msg);
 			return;
 		}
-		FVLog.log(LogLevel.DEBUG, fvSlicer, "sending to controller: " + msg);
+		logger.debug(fvSlicer.getName()+ "sending to controller: " + msg);
 		fvSlicer.sendMsg(msg, fvClassifier);
 	}
 

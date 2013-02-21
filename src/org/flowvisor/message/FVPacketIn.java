@@ -12,8 +12,6 @@ import org.flowvisor.config.FVConfig;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.flowvisor.message.lldp.LLDPUtil;
 import org.flowvisor.ofswitch.DPIDandPort;
 import org.flowvisor.ofswitch.TopologyConnection;
@@ -26,9 +24,13 @@ import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFType;
 import org.openflow.protocol.action.OFAction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 		TopologyControllable {
-
+	
+	final static Logger logger = LoggerFactory.getLogger(FVPacketIn.class);
 	/**
 	 * route and rewrite packet_in messages from switch to controller
 	 *
@@ -54,7 +56,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 				fvClassifier.getSwitchInfo().getDatapathId(), this.getInPort(),
 				this.getPacketData());
 		if (flowEntry == null) {
-			FVLog.log(LogLevel.DEBUG, fvClassifier,
+			logger.debug(fvClassifier.getName(),
 					"dropping unclassifiable msg: " + this.toVerboseString());
 			return;
 		}
@@ -70,7 +72,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 				FVSlicer fvSlicer = fvClassifier.getSlicerByName(sliceAction
 						.getSliceName());
 				if (fvSlicer == null) {
-					FVLog.log(LogLevel.WARN, fvClassifier,
+					logger.warn(fvClassifier.getName(),
 							"tried to send msg to non-existant slice: "
 									+ sliceAction.getSliceName()
 									+ " corrupted flowspace?:: "
@@ -118,7 +120,6 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 
 	private void sendDropRule(FVClassifier fvClassifier, FlowEntry flowEntry,
 			String sliceName, short hardTimeout, short idleTimeout) {
-		FVLog.log(LogLevel.TRACE, null, "FVPacketIn: sendDropRule");
 		FVFlowMod flowMod = (FVFlowMod) FlowVisor.getInstance().getFactory()
 				.getMessage(OFType.FLOW_MOD);
 		// block this exact flow
@@ -131,7 +132,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 		try {
 			drop_policy = FVConfig.getDropPolicy(sliceName);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ERROR, fvClassifier, "Failed to retrieve drop policy from config."
+			logger.error(fvClassifier.getName(), "Failed to retrieve drop policy from config."
 					+ "\nDefauting to exact drop_policy");
 			drop_policy = "exact";
 		}
@@ -141,7 +142,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			flowMod.setMatch(flowEntry.getRuleMatch());
 		else
 			// Should never happen
-			FVLog.log(LogLevel.FATAL, fvClassifier, "Error in configuration!");
+			logger.error(fvClassifier.getName(), "Error in configuration!");
 		flowMod.setCommand(FVFlowMod.OFPFC_ADD);
 		flowMod.setActions(new LinkedList<OFAction>()); // send to zero-length
 		// list, i.e., DROP
@@ -153,7 +154,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 		// send removed msg (1), not the check overlap (2), or
 		// emergency flow cache (4)
 
-		FVLog.log(LogLevel.WARN, fvClassifier, "inserting drop (hard="
+		logger.warn(fvClassifier.getName(), "inserting drop (hard="
 				+ hardTimeout + ",idle=" + idleTimeout + ") rule for "
 				+ flowEntry);
 		fvClassifier.sendMsg(flowMod, fvClassifier);
@@ -193,7 +194,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			DPIDandPort dpidandport = TopologyConnection.parseLLDP(this
 					.getPacketData());
 			if (dpidandport == null) {
-				FVLog.log(LogLevel.DEBUG, topologyConnection,
+				logger.debug(topologyConnection.getName(),
 								"ignoring non-lldp packetin: "
 										+ this.toVerboseString());
 				return;
@@ -201,7 +202,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			OFFeaturesReply featuresReply = topologyConnection
 					.getFeaturesReply();
 			if (featuresReply == null) {
-				FVLog.log(LogLevel.WARN, topologyConnection,
+				logger.warn(topologyConnection.getName(),
 						"ignoring packet_in: no features_reply yet");
 				return;
 			}

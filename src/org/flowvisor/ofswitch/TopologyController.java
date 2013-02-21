@@ -24,8 +24,10 @@ import org.flowvisor.events.FVEventLoop;
 import org.flowvisor.events.FVIOEvent;
 import org.flowvisor.events.FVTimerEvent;
 import org.flowvisor.exceptions.UnhandledEvent;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.json.JSONParam;
 
 /**
@@ -50,6 +52,9 @@ public class TopologyController extends OFSwitchAcceptor {
 
 	static long defaultUpdatePeriod = 5000; // in milliseconds
 	static long defaultTimeoutPeriod = 10000; // in milliseconds
+	
+	final static Logger logger = LoggerFactory.getLogger(TopologyController.class);
+
 
 	private final Map<String, TopologyCallback> generalCallBackDB;
 	private Map<TopologyCallback.EventType, List<TopologyCallback>> eventCallbacks;
@@ -82,11 +87,10 @@ public class TopologyController extends OFSwitchAcceptor {
 	}
 
 	public static FVEventHandler spawn(FVEventLoop pollLoop) {
-		FVLog.log(LogLevel.TRACE,null,"TopologyController: spawn");
 		if (runningInstance != null)
 			return runningInstance; // return version that's already running
 		if (!isConfigured()){
-			FVLog.log(LogLevel.DEBUG,null,"TopologyController: spawn not configured");
+			logger.debug("TopologyController: spawn not configured");
 			return null; // not configured for it
 		}
 		TopologyController tc = null;
@@ -97,13 +101,12 @@ public class TopologyController extends OFSwitchAcceptor {
 				FVConfig.setSliceHost(TopoUser, "localhost");
 				FVConfig.setSlicePort(TopoUser, port);
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.FATAL, tc,
+				logger.error(tc.getName(),
 						"tried to register topology controller info, but topo user '"
 								+ TopoUser + "' not found: " + e);
 			}
 		} catch (IOException e) {
-			FVLog.log(LogLevel.ERROR, null,
-					"failed to spawn TopologyController: " + e);
+			logger.error("failed to spawn TopologyController: " + e);
 		}
 		return tc;
 	}
@@ -183,16 +186,16 @@ public class TopologyController extends OFSwitchAcceptor {
 	 * @return
 	 */
 	private synchronized void processUpdate() {
-		FVLog.log(LogLevel.DEBUG, this, "processing updates");
+		logger.debug(this.getName()+ "processing updates");
 		for (Iterator<LinkAdvertisement> it = this.latestProbes.keySet()
 				.iterator(); it.hasNext();) {
 			LinkAdvertisement linkAdvertisement = it.next();
 			long now = System.currentTimeMillis();
 			long thisProbe = latestProbes.get(linkAdvertisement).longValue();
 			if ((thisProbe + this.timeoutPeriod) < now) {
-				FVLog.log(LogLevel.INFO, this, "timeout: removing link "
+				logger.info(this.getName(), "timeout: removing link "
 						+ linkAdvertisement);
-				FVLog.log(LogLevel.DEBUG, this, "timeout: " + thisProbe + "+"
+				logger.debug(this.getName(), "timeout: " + thisProbe + "+"
 						+ this.timeoutPeriod + " > " + now);
 				this.doCallback = true;
 				it.remove();
@@ -207,7 +210,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	}
 
 	private synchronized void processCallback() {
-		FVLog.log(LogLevel.INFO, this, "topology changed: doing callbacks");
+		logger.info(this.getName(), "topology changed: doing callbacks");
 		for (TopologyCallback topologyCallback : this.generalCallBackDB.values())
 			topologyCallback.spawn();
 		this.doCallback = false;
@@ -220,11 +223,10 @@ public class TopologyController extends OFSwitchAcceptor {
 		try {
 			sock = ssc.accept();
 			if (sock == null) {
-				FVLog.log(LogLevel.FATAL, null,
-						"ssc.accept() returned null !?! FIXME!");
+				logger.error("ssc.accept() returned null !?! FIXME!");
 				return;
 			}
-			FVLog.log(LogLevel.INFO, this, "got new connection: "
+			logger.info(this.getName(), "got new connection: "
 					+ sock.socket().getRemoteSocketAddress());
 			TopologyConnection tc = new TopologyConnection(this, pollLoop, sock);
 			tc.init();
@@ -275,7 +277,7 @@ public class TopologyController extends OFSwitchAcceptor {
 		for (TopologyConnection tc : this.topologyConnections)
 			if (tc.isConnected())
 				dpids.add(tc.getDataPathID());
-		FVLog.log(LogLevel.DEBUG, null, "List of dpids connected to the topology controller: " + dpids);
+		logger.debug("List of dpids connected to the topology controller: " + dpids);
 		return dpids;
 	}
 
@@ -295,7 +297,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	public synchronized void reportProbe(LinkAdvertisement linkAdvertisement) {
 		if (!this.latestProbes.containsKey(linkAdvertisement)) {
 			this.doCallback = true;
-			FVLog.log(LogLevel.INFO, this, "adding link " + linkAdvertisement);
+			logger.info(this.getName(), "adding link " + linkAdvertisement);
 		}
 		this.latestProbes.put(linkAdvertisement, Long.valueOf(System
 				.currentTimeMillis()));
@@ -309,12 +311,10 @@ public class TopologyController extends OFSwitchAcceptor {
 	 */
 
 	public static boolean isConfigured() {
-		FVLog.log(LogLevel.TRACE, null, "TopologyController: Checking if FV is configured to do topology" +
-				"discovery");
 		try {
 			return FVConfig.getTopologyServer();
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, null, "Creating config entry for topology server run parameter"
+			logger.warn("Creating config entry for topology server run parameter"
 					+ "=false");
 			try {
 				FVConfig.setTopologyServer(false);
@@ -372,7 +372,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	@Override
 	public void tearDown() {
 		super.tearDown();
-		FVLog.log(LogLevel.WARN, this, "shutting down");
+		logger.warn(this.getName(), "shutting down");
 		for (Iterator<TopologyConnection> it = this.topologyConnections
 				.iterator(); it.hasNext();) {
 			TopologyConnection topologyConnection = it.next();

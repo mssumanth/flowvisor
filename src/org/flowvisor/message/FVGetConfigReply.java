@@ -1,19 +1,23 @@
 package org.flowvisor.message;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFGetConfigReply;
 
 public class FVGetConfigReply extends OFGetConfigReply implements Classifiable,
 		Slicable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVGetConfigReply.class);
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(this, fvClassifier);
 		if (fvSlicer == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
+			logger.warn(fvClassifier.getName()+
 					"dropping unclassifiable xid in GetConfigReply: " + this);
 			return;
 		}

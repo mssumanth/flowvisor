@@ -8,8 +8,9 @@ import java.util.Set;
 import org.flowvisor.events.ConfigUpdateEvent;
 import org.flowvisor.events.FVEventHandler;
 import org.flowvisor.exceptions.UnhandledEvent;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract class entry in the Config
@@ -23,6 +24,8 @@ public class ConfigEntry {
 	Set<FVEventHandler> watchList; // never gets saved across sessions
 	boolean persistent; // does this config entry get saved across FV sessions?
 
+	final static Logger logger = LoggerFactory.getLogger(ConfigEntry.class);
+	
 	public ConfigEntry(ConfigType type) {
 		this.type = type;
 		this.watchList = new HashSet<FVEventHandler>();
@@ -98,12 +101,11 @@ public class ConfigEntry {
 	}
 
 	void sendUpdates(String fullPath) {
-		FVLog.log(LogLevel.TRACE, null, "ConfigEntry: sendUpdates");
 		for (FVEventHandler eh : watchList) {
 			try {
 				eh.handleEvent(new ConfigUpdateEvent(eh, fullPath));
 			} catch (UnhandledEvent e) {
-				FVLog.log(LogLevel.FATAL, eh,
+				logger.error(eh +
 						"Doesn't handle ConfigUpdateEvent but asked for them !?");
 			}
 		}

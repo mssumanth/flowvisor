@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFStatisticsReply;
 import org.openflow.protocol.OFStatisticsRequest;
@@ -27,6 +28,7 @@ import org.openflow.protocol.OFType;
 public class FVStats {
 	Map<String, Long> counters;
 
+	final static Logger logger = LoggerFactory.getLogger(FVStats.class);
 	/**
 	 * TODO : reimplement this as a flat array; our profiler says that we spend
 	 * 10% of our time in incrementCOunter doing Long.valueOf(long) which seems
@@ -69,7 +71,7 @@ public class FVStats {
 
 	public void incrementCounter(OFMessage ofm) {
 		String oftype = msg2str(ofm);
-		FVLog.log(LogLevel.DEBUG, null, "FVStats: Incrementing Counter for: ", oftype);
+		logger.debug("FVStats: Incrementing Counter for: ", oftype);
 		if (this.counters.containsKey(oftype))
 			this.counters.put(oftype, this.counters.get(oftype) + 1l);
 		else

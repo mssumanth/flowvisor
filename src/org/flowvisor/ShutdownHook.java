@@ -1,8 +1,9 @@
 package org.flowvisor;
 
 import org.flowvisor.config.FVConfigurationController;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -17,8 +18,11 @@ import org.flowvisor.log.LogLevel;
  *
  */
 public class ShutdownHook extends Thread {
+	
+	final static Logger logger = LoggerFactory.getLogger(ShutdownHook.class);
+	
 	public void run() {
-		FVLog.log(LogLevel.INFO, null, "Shutting down config database.");
+		logger.info("Shutting down config database.");
 		FVConfigurationController.instance().shutdown();
     }
 }

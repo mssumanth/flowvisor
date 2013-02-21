@@ -14,8 +14,10 @@ import java.util.Map;
 import org.flowvisor.config.BracketParse;
 import org.flowvisor.config.Bracketable;
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
@@ -49,6 +51,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 	// swap the policy after each defrag for version-ing
 	static DefragmentPolicy CurrentDefragPolicy = DefragmentPolicy.DefragAll;
 
+	final static Logger logger = LoggerFactory.getLogger(FlowEntry.class);
 
 	/**
 	 * IF switch is dpid and packet match's match, then perform action list
@@ -100,8 +103,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 		if (FlowEntry.UNIQUE_FLOW_ID == -1) {
 			FlowEntry.UNIQUE_FLOW_ID = defragmentFlowIDS();
 			if (FlowEntry.UNIQUE_FLOW_ID < 0) {
-					FVLog.log(LogLevel.FATAL, null,
-							"STILL unable to find a free flow ID "+
+					logger.error("STILL unable to find a free flow ID "+
 							"- FlowSpace > 2Billion?- dying");
 					throw new RuntimeException(
 							"failed to find free FlowEntry.iD "+
@@ -151,7 +153,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 		int neoId;
 		int increment;
 
-		FVLog.log(LogLevel.INFO, null, "defragmenting flowentry IDs using policy " + CurrentDefragPolicy);
+		logger.info("defragmenting flowentry IDs using policy " + CurrentDefragPolicy);
 
 		switch(policy) {
 			case DefragAll:
@@ -522,7 +524,6 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 	 * @return true == yes, false == no
 	 */
 	public boolean hasPermissions(String sliceName, int perms) {
-		FVLog.log(LogLevel.TRACE, null, "FlowEntry: hasPermissions");
 		for (OFAction ofaction : this.actionsList) {
 			if (ofaction instanceof SliceAction) {
 				SliceAction sliceAction = (SliceAction) ofaction;

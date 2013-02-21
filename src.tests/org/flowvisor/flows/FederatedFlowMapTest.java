@@ -5,8 +5,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.flowvisor.log.DevNullLogger;
-import org.flowvisor.log.FVLog;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.util.U16;
@@ -18,7 +16,6 @@ public class FederatedFlowMapTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		FVLog.setDefaultLogger(new DevNullLogger());
 		this.flowmap = new FederatedFlowMap();
 		FlowEntry.UNIQUE_FLOW_ID = -1;
 		FVMatch match = new FVMatch();

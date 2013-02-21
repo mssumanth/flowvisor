@@ -6,8 +6,9 @@ package org.flowvisor.flows;
 import java.nio.*;
 import org.openflow.protocol.action.*;
 import org.flowvisor.*;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author capveg
@@ -21,6 +22,8 @@ public class SliceAction extends OFActionVendor implements Cloneable {
 
 	int slicePerms;
 	String sliceName;
+	
+	final static Logger logger = LoggerFactory.getLogger(SliceAction.class);
 
 	public SliceAction(String sliceName, int slicePerms) {
 		super();
@@ -70,7 +73,7 @@ public class SliceAction extends OFActionVendor implements Cloneable {
 	}
 
 	public String getSliceName() {
-		FVLog.log(LogLevel.DEBUG,null,"SliceAction: The sliceName is: " + sliceName);
+		logger.debug("SliceAction: The sliceName is: " + sliceName);
 		return sliceName;
 	}
 

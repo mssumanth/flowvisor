@@ -8,8 +8,10 @@ import org.flowvisor.exceptions.ActionDisallowedException;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowSpaceRuleStore;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFMatch;
@@ -19,6 +21,8 @@ import org.openflow.protocol.action.OFActionStripVirtualLan;
 
 public class FVActionStripVirtualLan extends OFActionStripVirtualLan implements
 		SlicableAction {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVActionStripVirtualLan.class);
 
 	@Override
 	public void slice(List<OFAction> approvedActions, OFMatch match,
@@ -33,7 +37,7 @@ public class FVActionStripVirtualLan extends OFActionStripVirtualLan implements
 				if (it.next() instanceof SliceAction) {
 					SliceAction action = (SliceAction) it.next();
 					if (action.getSliceName().equals(fvSlicer.getSliceName())) {
-						FVLog.log(LogLevel.DEBUG, fvSlicer, "Approving " + this + 
+						logger.debug(fvSlicer.getName(), "Approving " + this + 
 								" for " + match);
 						approvedActions.add(this);
 					}

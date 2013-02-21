@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.ofswitch.TopologyConnection;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFPhysicalPort;
 
 public class FVFeaturesReply extends org.openflow.protocol.OFFeaturesReply
 		implements Classifiable, Slicable, TopologyControllable {
-
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFeaturesReply.class);
+	
 	/**
 	 * Prune the listed ports to only those that appear in the slice
 	 */
@@ -20,7 +24,7 @@ public class FVFeaturesReply extends org.openflow.protocol.OFFeaturesReply
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(this, fvClassifier);
 		if (fvSlicer == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
+			logger.warn(fvClassifier+
 					" dropping msg with un-untranslatable xid: " + this);
 			return;
 		}

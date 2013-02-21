@@ -13,15 +13,12 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.server.UserIdentity.Scope;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 
-public class FlowVisorAuthenticator extends BasicAuthenticator {
-	
+
+public class FlowVisorAuthenticator extends BasicAuthenticator {	
 	@Override
 	public Authentication validateRequest(ServletRequest req,
 			ServletResponse arg1, boolean arg2) throws ServerAuthException {
-		FVLog.log(LogLevel.TRACE, null, "FlowVisorAuthenticator: validateRequest" );
 		String credentials = ((HttpServletRequest) req).getHeader(HttpHeaders.AUTHORIZATION);
 		try {
 			byte[] b64 = new Base64().decode(credentials.substring(6).getBytes());

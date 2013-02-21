@@ -23,9 +23,8 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.JettyLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JettyServer implements Runnable{
 
@@ -35,19 +34,17 @@ public class JettyServer implements Runnable{
 	private Server jettyServer;
 
 	protected BasicJSONRPCService service = new FVUserAPIJSONImpl();
+	
+	final static Logger logger = LoggerFactory.getLogger(JettyServer.class);
 
 	public JettyServer(int port){
 		init(port);
 	}
 
 	private void init(int port){
-		
-		FVLog.log(LogLevel.TRACE,null,"JettyServer: Entering init");
+		//System.setProperty("org.eclipse.jetty.util.log.class", JettyLog.class.getCanonicalName());
 
-		System.setProperty("org.eclipse.jetty.util.log.class", JettyLog.class.getCanonicalName());
-
-		FVLog.log(LogLevel.INFO, null,
-				"initializing FlowVisor UserAPI JSONRPC SSL WebServer on port "
+		logger.info("initializing FlowVisor UserAPI JSONRPC SSL WebServer on port "
 						+ port);
 		jettyServer = new Server(port);
 
@@ -86,7 +83,6 @@ public class JettyServer implements Runnable{
 		ConstraintSecurityHandler authHandler = createAuthenticationHandler(jettyServer);
 		authHandler.setHandler(new AuthenticationHandler());
 		//context.setHandler(authHandler);
-		FVLog.log(LogLevel.TRACE,null,"JettyServer: Exiting init");
 	}
 
 	@Override
@@ -154,7 +150,6 @@ public class JettyServer implements Runnable{
 	}
 
 	public static void spawnJettyServer(int port){
-		FVLog.log(LogLevel.TRACE,null,"JettyServer: Entered spawnJettyServer");
 
 		if(port == -1){
 			try {
@@ -165,14 +160,12 @@ public class JettyServer implements Runnable{
 		}
 
 		if (port == -1) {
-			FVLog.log(LogLevel.INFO, null, "JSON service disabled in config (Jetty webserver port == -1)");
+			logger.info("JSON service disabled in config (Jetty webserver port == -1)");
 			return;
 		}
 
 		Thread jettyThread = new Thread(new JettyServer(port));
 		jettyThread.start();
-		
-		FVLog.log(LogLevel.TRACE,null,"JettyServer: Exited spawnJettyServer");
 	}
 
 }

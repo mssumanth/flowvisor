@@ -24,8 +24,10 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.eclipse.jetty.http.HttpHeaders;
 import org.flowvisor.flows.FlowEntry;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.ofswitch.TopologyController;
 import org.json.JSONDeserializers;
 import org.json.JSONParam;
@@ -38,6 +40,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class TopologyCallback implements Runnable {
+	
+	final static Logger logger = LoggerFactory.getLogger(TopologyCallback.class);
 
 	public enum EventType{
 		GENERAL,
@@ -152,14 +156,13 @@ public class TopologyCallback implements Runnable {
 			//this.client.execute(this.methodName, new Object[] { cookie });
 			this.client.execute(this.methodName,new Object[]{ null});
 		} catch (XmlRpcException e) {
-			FVLog.log(LogLevel.WARN, TopologyController.getRunningInstance(),
+			logger.warn(TopologyController.getRunningInstance().getName() + 
 					"topoCallback to URL=" + URL + " failed: " + e);
 		}
 
 	}
 
 	private void runSpecificCallback(){
-		FVLog.log(LogLevel.TRACE,null,"TopologyCallback: runSpecificCallback");
 		HttpURLConnection connection = null;
 		OutputStreamWriter writer = null;
 		InputStreamReader reader = null;
@@ -193,11 +196,11 @@ public class TopologyCallback implements Runnable {
 			responseCode = connection.getResponseCode();
 
 			if (responseCode == HttpURLConnection.HTTP_OK) {
-				FVLog.log(LogLevel.INFO, null, "HTTP topology callback '" + this.methodName + " to " + this.URL + "'successful.");
+				logger.info("HTTP topology callback '" + this.methodName + " to " + this.URL + "'successful.");
 			} else
-				FVLog.log(LogLevel.WARN, null, "HTTP topology callback '" + this.methodName + " to " + this.URL + "' failed on server.");
+				logger.warn("HTTP topology callback '" + this.methodName + " to " + this.URL + "' failed on server.");
 		} catch (Exception e) {
-			FVLog.log(LogLevel.WARN, null, "HTTP topology callback '" + this.methodName + " to " + this.URL + "'failed due to " + e.getLocalizedMessage());
+			logger.warn("HTTP topology callback '" + this.methodName + " to " + this.URL + "'failed due to " + e.getLocalizedMessage());
 		} finally {
 			if (writer != null){
 				try {
@@ -246,9 +249,6 @@ public class TopologyCallback implements Runnable {
 	}
 
 	public void installDumbTrust() {
-		
-		FVLog.log(LogLevel.TRACE,null,"TopologyCallback: installDumbTrust");
-
 		// Create a trust manager that does not validate certificate chains
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public X509Certificate[] getAcceptedIssuers() {

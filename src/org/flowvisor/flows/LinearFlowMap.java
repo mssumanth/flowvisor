@@ -11,8 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.flowvisor.exceptions.FlowEntryNotFound;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 
 /**
@@ -31,7 +30,6 @@ public class LinearFlowMap implements FlowMap, Cloneable {
 
 	@Override
 	public FlowEntry matches(long dpid, short inputPort, byte[] packetData) {
-		FVLog.log(LogLevel.TRACE,null,"LinearFlowMap: matches");
 		FVMatch m = new FVMatch();
 		m.loadFromPacket(packetData, inputPort);
 		List<FlowEntry> list = matches(dpid, m);

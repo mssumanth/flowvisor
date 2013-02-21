@@ -40,10 +40,10 @@ import org.flowvisor.flows.FlowDBEntry;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.openflow.protocol.action.OFAction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client side stand alone command-line tool for invoking the FVUserAPI
@@ -58,6 +58,9 @@ public class FVCtl {
 	String URL;
 	XmlRpcClientConfigImpl config;
 	XmlRpcClient client;
+	
+	final static Logger logger = LoggerFactory.getLogger(FVCtl.class);
+	
 	static APICmd[] cmdlist = new APICmd[] {
 		new APICmd("listSlices", 0),
 		new APICmd("createSlice", 3, "<slicename> <controller_url> <email>"),
@@ -198,7 +201,7 @@ public class FVCtl {
 
 	private void handleFlowSpaceResults(List<FlowEntry> flows){
 		for(FlowEntry flow : flows){
-			FVLog.log(LogLevel.DEBUG, null, "handleFlowSpaceResults: " + flow.toString());
+			logger.debug("handleFlowSpaceResults: " + flow.toString());
 			System.out.println(flow.toString());
 		}
 	}

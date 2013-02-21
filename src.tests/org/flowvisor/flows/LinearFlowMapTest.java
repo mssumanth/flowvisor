@@ -5,8 +5,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.flowvisor.log.DevNullLogger;
-import org.flowvisor.log.FVLog;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.util.U16;
@@ -18,7 +16,6 @@ public class LinearFlowMapTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		FVLog.setDefaultLogger(new DevNullLogger());
 		this.flowmap = new LinearFlowMap();
 		FVMatch match = new FVMatch();
 		match.fromString("nw_src=128.8.0.0/16");

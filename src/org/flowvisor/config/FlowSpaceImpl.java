@@ -18,8 +18,10 @@ import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.util.HexString;
@@ -33,6 +35,7 @@ public class FlowSpaceImpl implements FlowSpace {
 	private ConfDBSettings settings = null;
 	private static FlowSpaceImpl instance =  null;
 	
+	final static Logger logger = LoggerFactory.getLogger(FlowSpaceImpl.class);
 	
 	//Callbacks
 	
@@ -91,7 +94,6 @@ public class FlowSpaceImpl implements FlowSpace {
 	 */
 	@Override
 	public FlowMap getFlowMap() throws ConfigError {
-		FVLog.log(LogLevel.TRACE, null, "FlowSpaceImpl: getFlowMap");
 		Connection conn = null;
 		PreparedStatement ps = null;
 		PreparedStatement actions = null;
@@ -163,7 +165,6 @@ public class FlowSpaceImpl implements FlowSpace {
 
 	@Override
 	public void setFlowMap(FlowMap map) throws ConfigError {
-		FVLog.log(LogLevel.TRACE, null, "FlowSpaceImpl: setFlowMap");
 		SortedSet<FlowEntry> rules = map.getRules();
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -262,7 +263,7 @@ public class FlowSpaceImpl implements FlowSpace {
 					if (set.next())
 						sliceid = set.getInt("id");
 					else {
-						FVLog.log(LogLevel.WARN, null, "Slice name " + ((SliceAction) act).getSliceName() + " does not exist... skipping.");
+						logger.warn("Slice name " + ((SliceAction) act).getSliceName() + " does not exist... skipping.");
 						continue;
 					}
 					ps = conn.prepareStatement(SACTIONS);
@@ -274,7 +275,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			}
 			notify(ChangedListener.FLOWMAP, FFLOWMAP, map);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.DEBUG, null, e.getMessage());
+			logger.debug(e.getMessage());
 			throw new ConfigError("Unable to set the flowmap in db");
 		} finally {
 			close(set);
@@ -287,7 +288,7 @@ public class FlowSpaceImpl implements FlowSpace {
 	
 	@Override
 	public void notifyChange(FlowMap map) {
-		FVLog.log(LogLevel.DEBUG, null, "Notifying flowspace change");
+		logger.debug("Notifying flowspace change");
 		notify(ChangedListener.FLOWMAP, FFLOWMAP, map);
 	}
 
@@ -377,7 +378,7 @@ public class FlowSpaceImpl implements FlowSpace {
 				if (set.next())
 					sliceid = set.getInt("id");
 				else {
-					FVLog.log(LogLevel.WARN, null, "Slice name " + ((SliceAction) act).getSliceName() + " does not exist... skipping.");
+					logger.warn("Slice name " + ((SliceAction) act).getSliceName() + " does not exist... skipping.");
 					continue;
 				}
 				ps = conn.prepareStatement(SACTIONS);
@@ -388,7 +389,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			}
 			return ruleid;
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.DEBUG, null, e.getMessage());
+			logger.debug(e.getMessage());
 			throw new ConfigError("Unable to set the flowmap in db");
 		} finally {
 			close(set);
@@ -410,11 +411,11 @@ public class FlowSpaceImpl implements FlowSpace {
 			ps.setInt(1, id);
 			int affected = -1;
 			if ((affected = ps.executeUpdate()) != 1) {
-				FVLog.log(LogLevel.ERROR, null, "Failed to delete rule with id ", id, " : rows affected ", affected);
+				logger.error("Failed to delete rule with id ", id, " : rows affected ", affected);
 				throw new ConfigError("Unable to remove rule with id " + id);
 			}
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.DEBUG, null, e.getMessage());
+			logger.debug(e.getMessage());
 			throw new ConfigError("Unable to remove rule with id " + id);
 		} finally {
 			close(ps);
@@ -541,7 +542,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			}
 			writer.endArray();
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.FATAL, null, "Failed to write flowspace config : " + e.getMessage());
+			logger.error("Failed to write flowspace config : " + e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -706,7 +707,7 @@ public class FlowSpaceImpl implements FlowSpace {
 				ps.setInt(15, ((Long) row.get(WILDCARDS)).intValue());
 			
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Flow rule insertion failed... siliently.");
+				logger.warn("Flow rule insertion failed... siliently.");
 			set = ps.getGeneratedKeys();
 			set.next();
 			ruleid = set.getInt(1);
@@ -727,7 +728,7 @@ public class FlowSpaceImpl implements FlowSpace {
 				ps.setInt(2, sliceid);
 				ps.setInt(3, entry.getValue());
 				if (ps.executeUpdate() == 0)
-					FVLog.log(LogLevel.WARN, null, "Action insertion failed... siliently.");
+					logger.warn("Action insertion failed... siliently.");
 			}
 			} catch (SQLException e) {
 				e.printStackTrace();

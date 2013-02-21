@@ -4,8 +4,10 @@
 package org.flowvisor.events;
 
 import org.flowvisor.classifier.FVSendMsg;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVMessageFactory;
 import org.openflow.protocol.OFEchoRequest;
 import org.openflow.protocol.OFType;
@@ -22,7 +24,8 @@ public class OFKeepAlive extends FVTimerEvent {
 	private final FVMessageFactory offactory;
 	FVEventLoop loop;
 	private final FVSendMsg sendMsg;
-
+	final static Logger logger = LoggerFactory.getLogger(OFKeepAlive.class);
+	
 	public OFKeepAlive(FVEventHandler handler, FVSendMsg sendMsg,
 			FVEventLoop loop) {
 		super(0, handler, handler, null);
@@ -39,8 +42,6 @@ public class OFKeepAlive extends FVTimerEvent {
 	 * @return the timeout
 	 */
 	public long getTimeout() {
-		FVLog.log(LogLevel.TRACE, null, "OFKeepAlive: The timeout val is: " +
-				timeout);
 		return timeout;
 	}
 
@@ -68,7 +69,6 @@ public class OFKeepAlive extends FVTimerEvent {
 	}
 
 	public void sendPing() {
-		FVLog.log(LogLevel.TRACE, null, "OFKeepAlive: sendingPing ");
 		OFEchoRequest ping = (OFEchoRequest) offactory
 				.getMessage(OFType.ECHO_REQUEST);
 		ping.setXid(xid++);
@@ -77,7 +77,6 @@ public class OFKeepAlive extends FVTimerEvent {
 
 	public void registerPong() {
 		lastPongTime = System.currentTimeMillis();
-		FVLog.log(LogLevel.TRACE, null, "OFKeepAlive: lastPongTime- "+ lastPongTime);
 	}
 
 	/**
@@ -86,7 +85,7 @@ public class OFKeepAlive extends FVTimerEvent {
 	 * @return
 	 */
 	public boolean isAlive() {
-		FVLog.log(LogLevel.DEBUG,null,"isAlive: lastPongTime- " + this.lastPongTime + "timeout- " + this.timeout +  
+		logger.debug("isAlive: lastPongTime- " + this.lastPongTime + "timeout- " + this.timeout +  
 				"currentTimeMillis- " + System.currentTimeMillis());
 		return ((this.lastPongTime + this.timeout) > System.currentTimeMillis());
 	}

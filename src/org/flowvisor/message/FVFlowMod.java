@@ -6,8 +6,10 @@ import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
 import org.flowvisor.flows.FlowIntersect;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFError.OFBadRequestCode;
@@ -18,6 +20,8 @@ import org.openflow.protocol.action.OFAction;
 
 public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 		Classifiable, Slicable, Cloneable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFlowMod.class);
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
@@ -35,14 +39,14 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 
 	@Override
 	public void sliceFromController(FVClassifier fvClassifier, FVSlicer fvSlicer) {
-		FVLog.log(LogLevel.DEBUG, fvSlicer, "recv from controller: ", this);
+		logger.debug(fvSlicer.getName()+ "recv from controller: ", this);
 		FVMessageUtil.translateXid(this, fvClassifier, fvSlicer);
 
 		// make sure that this slice can access this bufferID
 		if ((this.command != OFFlowMod.OFPFC_DELETE 
 				&& this.command != OFFlowMod.OFPFC_DELETE_STRICT) 
 				&& !fvSlicer.isBufferIDAllowed(this.getBufferId())) {
-			FVLog.log(LogLevel.WARN, fvSlicer,
+			logger.warn(fvSlicer.getName()+
 					"EPERM buffer_id ", this.getBufferId(), " disallowed: "
 							, this);
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
@@ -57,7 +61,7 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 					fvClassifier, fvSlicer);
 		} catch (ActionDisallowedException e) {
 			
-			FVLog.log(LogLevel.WARN, fvSlicer, "EPERM bad actions: ", this);
+			logger.warn(fvSlicer.getName()+ "EPERM bad actions: ", this);
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 					e.getError(), this), fvSlicer);
 			return;
@@ -111,11 +115,11 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 		
 
 		if (expansions == 0) {
-			FVLog.log(LogLevel.WARN, fvSlicer, "dropping illegal fm: ", this);
+			logger.warn(fvSlicer.getName()+ "dropping illegal fm: ", this);
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 					OFFlowModFailedCode.OFPFMFC_EPERM, this), fvSlicer);
 		} else
-			FVLog.log(LogLevel.DEBUG, fvSlicer, "expanded fm ", expansions,
+			logger.debug(fvSlicer.getName()+ "expanded fm ", expansions,
 					" times: ", this);
 	}
 	

@@ -10,8 +10,6 @@ import junit.framework.TestCase;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
 import org.flowvisor.config.LoadConfig;
-import org.flowvisor.log.DevNullLogger;
-import org.flowvisor.log.FVLog;
 import org.flowvisor.openflow.protocol.FVMatch;
 
 import org.openflow.protocol.OFPort;
@@ -27,7 +25,6 @@ public class FlowSpaceUtilsTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		FVLog.setDefaultLogger(new DevNullLogger());
 		FlowEntry.UNIQUE_FLOW_ID = 0;
         FVConfigurationController.init(new ConfDBHandler());
 		LoadConfig.defaultConfig("0fw0rk");

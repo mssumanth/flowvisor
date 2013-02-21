@@ -4,8 +4,6 @@
 package org.flowvisor.events;
 
 import org.flowvisor.exceptions.*;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 
 /**
  * Basic implementation of an event handler Both for reference and used in
@@ -47,7 +45,6 @@ public class ExampleHandler implements FVEventHandler {
 	 */
 	@Override
 	public void handleEvent(FVEvent e) throws UnhandledEvent {
-		FVLog.log(LogLevel.TRACE, this, "ExampleHandler: handleEvent");
 		if (Thread.currentThread().getId() != this.getThreadContext()) {
 			// this event was sent from a different thread context
 			loop.queueEvent(e); // queue event

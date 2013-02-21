@@ -3,8 +3,10 @@ package org.flowvisor.message;
 import java.util.List;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.statistics.SlicableStatistic;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFStatisticsMessageBase;
@@ -13,10 +15,12 @@ import org.openflow.protocol.statistics.OFStatistics;
 
 public class FVStatisticsRequest extends OFStatisticsRequest implements
 		Classifiable, Slicable, SanityCheckable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFeaturesReply.class);
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
-		FVLog.log(LogLevel.WARN, fvClassifier, "dropping unexpected msg: "
+		logger.warn(fvClassifier.getName(), "dropping unexpected msg: "
 				+ this);
 	}
 
@@ -57,7 +61,7 @@ public class FVStatisticsRequest extends OFStatisticsRequest implements
 		if (count == msgLen)
 			return true;
 		else {
-			FVLog.log(LogLevel.WARN, null, "msg failed sanity check: " + this);
+			logger.warn("msg failed sanity check: " + this);
 			return false;
 		}
 	}

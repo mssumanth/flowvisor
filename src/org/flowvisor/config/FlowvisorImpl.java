@@ -9,8 +9,9 @@ import java.util.HashMap;
 
 
 import org.flowvisor.FlowVisor;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.stream.JsonReader;
 
@@ -22,6 +23,7 @@ public class FlowvisorImpl implements Flowvisor {
 	
 	private ConfDBSettings settings = null;
 	
+	final static Logger logger = LoggerFactory.getLogger(FlowvisorImpl.class);
 	// Callbacks
 	private static String FTRACK = "setFlowTracking";
 	private static String FSTATS = "setStatsDescHack";
@@ -85,7 +87,7 @@ public class FlowvisorImpl implements Flowvisor {
 			if (set.next())
 				return set.getBoolean(TRACK);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -115,7 +117,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("Listen port not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -144,7 +146,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("CheckPointing config not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -171,7 +173,7 @@ public class FlowvisorImpl implements Flowvisor {
 			if (set.next())
 				return set.getBoolean(STATS);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -200,7 +202,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("API Webserver port not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			
 			close(set);
@@ -228,7 +230,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("API Jetty Webserver port not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -258,7 +260,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("default flood permissions not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -289,7 +291,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("Log ident not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -349,7 +351,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("Log facility not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -366,7 +368,6 @@ public class FlowvisorImpl implements Flowvisor {
 	
 	@Override
 	public Boolean getTopologyServer(int id) throws ConfigError {
-		FVLog.log(LogLevel.TRACE,null,"FlowvisorImpl: getTopologyServer");
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet set = null;
@@ -380,7 +381,7 @@ public class FlowvisorImpl implements Flowvisor {
 			else
 				throw new ConfigError("Topology Server not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -405,9 +406,9 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setBoolean(1, topo);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Topology server setting update had no effect.");
+				logger.warn("Topology server setting update had no effect.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 			throw new ConfigError("Unable to update topology server setting.");
 		} finally {
 			close(set);
@@ -434,10 +435,10 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setString(1, floodPerm);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Track flows update had no effect.");
+				logger.warn("Track flows update had no effect.");
 			notify(ChangedListener.FLOWVISOR, FFLOOD, floodPerm);
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -462,10 +463,10 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setBoolean(1, track_flows);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Track flows update had no effect.");
+				logger.warn("Track flows update had no effect.");
 			notify(ChangedListener.FLOWVISOR, FTRACK, track_flows);
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -491,9 +492,9 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setBoolean(1, stats_desc_hack);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Track flows update had no effect.");
+				logger.warn("Track flows update had no effect.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 			notify(ChangedListener.FLOWVISOR, FSTATS, stats_desc_hack);
 		} finally {
 			close(set);
@@ -518,7 +519,7 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setString(1, logging);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Track flows update had no effect.");
+				logger.warn("Track flows update had no effect.");
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		} finally {
@@ -544,9 +545,9 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setString(1, logging);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Unable to set the logging facility.");
+				logger.warn("Unable to set the logging facility.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 			
 		} finally {
 			close(set);
@@ -571,9 +572,9 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setString(1, logging);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Unable to set the logging facility.");
+				logger.warn("Unable to set the logging facility.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 			
 		} finally {
 			close(set);
@@ -598,9 +599,9 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setInt(1, port);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Unable to set the logging facility.");
+				logger.warn("Unable to set the logging facility.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 			
 		} finally {
 			close(set);
@@ -625,9 +626,9 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setInt(1, port);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Unable to set the api port.");
+				logger.warn("Unable to set the api port.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn(e.getMessage());
 			
 		} finally {
 			close(set);
@@ -652,11 +653,10 @@ public class FlowvisorImpl implements Flowvisor {
 			ps.setInt(1, port);
 			ps.setInt(2, id);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Unable to set the jetty port.");
+				logger.warn("Unable to set the jetty port.");
 			} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
-			
-		} finally {
+				logger.warn(e.getMessage());
+			} finally {
 			close(set);
 			close(ps);
 			close(conn);	
@@ -685,7 +685,6 @@ public class FlowvisorImpl implements Flowvisor {
 		} catch (Exception e) {
 			// Don't care, haha!
 		}
-
 	}
 	
 	@Override
@@ -744,7 +743,7 @@ public class FlowvisorImpl implements Flowvisor {
 			//writer.endObject();
 				
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -874,7 +873,7 @@ public class FlowvisorImpl implements Flowvisor {
 				row.put(CONFIG, "default");
 			ps.setString(14, (String) row.get(CONFIG));
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Insertion failed... siliently.");
+				logger.warn("Insertion failed... siliently.");
 			} catch (SQLException e) {
 				e.printStackTrace();
 		} finally {

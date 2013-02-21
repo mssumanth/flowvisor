@@ -4,9 +4,6 @@
 package org.flowvisor.message.lldp;
 
 import java.nio.ByteBuffer;
-
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.flowvisor.message.FVPacketIn;
 import org.flowvisor.message.FVPacketOut;
 import org.openflow.util.StringByteSerializer;
@@ -49,7 +46,7 @@ public class LLDPTrailer {
 			+ CHASSIS_ID_LEN;
 	String sliceName;
 	String flowVisorName; // for cross-aggregate federated GENI identification
-
+	
 	public LLDPTrailer(String sliceName) {
 		this.sliceName = sliceName;
 		this.flowVisorName = "";
@@ -115,7 +112,6 @@ public class LLDPTrailer {
 	 */
 
 	public static LLDPTrailer getTrailer(FVPacketIn pi) {
-		FVLog.log(LogLevel.TRACE, null, "LLDPTrailer- getTrailer");
 		ByteBuffer packet = ByteBuffer.wrap(pi.getPacketData());
 		if (packet.capacity() < MIN_LENGTH)
 			return null;

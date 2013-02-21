@@ -17,8 +17,9 @@ import java.util.LinkedList;
 import org.flowvisor.api.APIAuth;
 import org.flowvisor.exceptions.DuplicateControllerException;
 import org.flowvisor.flows.FlowMap;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -49,6 +50,8 @@ public class FVConfig {
 	
 	final static public int OFP_TCP_PORT = 6633;
 	public static final long DelayWarning = 10;
+	
+	final static Logger logger = LoggerFactory.getLogger(FVConfig.class);
 
 	/**
 	 * Return the flowmap associated with this node
@@ -105,7 +108,6 @@ public class FVConfig {
 				else if (reader.peek() == JsonToken.BEGIN_OBJECT)
 					reader.beginObject();
 				else if (reader.peek() == JsonToken.END_OBJECT) {
-					
 					reader.endObject();
 				} else if (reader.peek() == JsonToken.NAME)
 					 nextName = reader.nextName();
@@ -150,11 +152,7 @@ public class FVConfig {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
-		
-		FVLog.log(LogLevel.TRACE,null,"FVConfig: Exited readFromFile");
-		
-		
+		}		
 	}
 
 	
@@ -253,7 +251,7 @@ public class FVConfig {
 	}
 
 	public static boolean checkSliceName(String sliceName) {
-		FVLog.log(LogLevel.TRACE, null, "FVConfig: checkingSliceName " + sliceName);
+		logger.debug("FVConfig: checkingSliceName " + sliceName);
 		Slice proxy = SliceImpl.getProxy();
 		return proxy.checkSliceName(sliceName);
 	}
@@ -471,7 +469,6 @@ public class FVConfig {
 	}
 	
 	public static void setFlowTracking(boolean track) throws ConfigError {
-		FVLog.log(LogLevel.TRACE, null, "Setting Track flows");
 		Flowvisor proxy = FlowvisorImpl.getProxy();
 		proxy.settrack_flows(track);
 	}
@@ -534,7 +531,6 @@ public class FVConfig {
 
 	public static void main(String args[]) throws FileNotFoundException,
 			IOException, NumberFormatException, ConfigError {
-		FVLog.log(LogLevel.TRACE,null,"FVConfig: main");
 		if (args.length < 1) {
 			System.err
 					.println("Usage: FVConfig config.xml [fvadmin_passwd] [of_listen_port] [rpc_listen_port]");

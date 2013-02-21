@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.flowvisor.events.FVEventHandler;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFFlowRemoved;
@@ -22,6 +24,8 @@ import org.openflow.protocol.OFFlowRemoved;
 public class LinearFlowRewriteDB implements FlowRewriteDB {
 
 	private static final long serialVersionUID = 1L;
+	
+	final static Logger logger = LoggerFactory.getLogger(LinearFlowRewriteDB.class);
 
 	FVEventHandler fvEventHandler;
 	Map<FlowDBEntry, FlowDB> map;
@@ -67,11 +71,11 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			processFlowModsDelete(original, rewrite);
 			break;
 		default:
-			FVLog.log(LogLevel.WARN, fvEventHandler,
+			logger.warn(fvEventHandler.getName() +
 					"flowDB: ignore fm with unknown flow_mod command:: ",
 					original.getCommand());
 		}
-		FVLog.log(LogLevel.DEBUG, null, "flowrewritedb: ", op, ": new size ", size());
+		logger.debug("flowrewritedb: ", op, ": new size ", size());
 	}
 
 	private void processFlowModsDeleteStrict(OFFlowMod original,
@@ -91,7 +95,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			}
 		}
 		if (!found)
-			FVLog.log(LogLevel.DEBUG, fvEventHandler,
+			logger.debug(fvEventHandler.getName()+
 					"rewriteDB: delete non-strict: no match found");
 	}
 
@@ -112,7 +116,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			}
 		}
 		if (!found)
-			FVLog.log(LogLevel.DEBUG, fvEventHandler,
+			logger.debug(fvEventHandler.getName()+
 					"rewriteDB: delete non-strict: no match found");
 	}
 
@@ -158,7 +162,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 		FlowDBEntry removedEntry = new FlowDBEntry(dpid, 0, flowRemoved,
 				sliceName);
 		if (!reverseMap.containsKey(removedEntry)) {
-			FVLog.log(LogLevel.WARN, fvEventHandler,
+			logger.warn(fvEventHandler.getName()+
 					"flowrewriteDB: tried to remove non-existent flow ",
 					flowRemoved);
 			return;
@@ -167,10 +171,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 		reverseMap.remove(removedEntry);
 		FlowDB flowDB = map.get(original);
 		if (flowDB == null) {
-			FVLog.log(
-					LogLevel.WARN,
-					fvEventHandler,
-					"flowrewriteDB: internal corruption; flow exists in reverse but not forward map: ",
+			logger.warn(fvEventHandler.getName() + "flowrewriteDB: internal corruption; flow exists in reverse but not forward map: ",
 					flowRemoved);
 			return;
 		}

@@ -17,8 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.flowvisor.exceptions.RPCException;
 import org.flowvisor.flows.FlowEntry;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.json.JSONDeserializers;
 import org.json.JSONParam;
 import org.json.JSONRequest;
@@ -31,10 +29,15 @@ import org.openflow.protocol.action.OFAction;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BasicJSONRPCService {
 
 	/** The methods. */
 	private Map<String, Method> methods = new HashMap<String, Method>();
+	
+	final static Logger logger = LoggerFactory.getLogger(BasicJSONRPCService.class);
 
 	private static final Gson gson =
 		new GsonBuilder().registerTypeAdapter(OFAction.class, new JSONSerializers.OFActionSerializer())
@@ -65,7 +68,6 @@ public class BasicJSONRPCService {
 	}
 
 	public void dispatch(HttpServletRequest req, HttpServletResponse resp) {
-		FVLog.log(LogLevel.TRACE, null, "BasicJSONRPCService: dispatch" );
 		int id = 0;
 		try {
 
@@ -83,23 +85,23 @@ public class BasicJSONRPCService {
 
 				args = parseArguments(method, jreq);
 
-				FVLog.log(LogLevel.DEBUG, null, "---------invoke:" + jreq.toString());
+				logger.debug("---------invoke:" + jreq.toString());
 				Object retObj = method.invoke(this, args);
 
 				JSONResponse jResp = new JSONResponse(new JSONResult(gson.toJson(retObj, method.getGenericReturnType())), id);
-				FVLog.log(LogLevel.DEBUG, null, "---------invoke ret:" + jResp.toString());
+				logger.debug("---------invoke ret:" + jResp.toString());
 				writeJSONObject(resp, jResp);
 			} catch (IOException e) {
-				FVLog.log(LogLevel.WARN, null, e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
 				throw new RPCException(RPCException.INTERNAL_ERROR, e.getMessage(),  e);
 			} catch (InstantiationException e) {
-				FVLog.log(LogLevel.WARN, null, e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
 				throw new RPCException(RPCException.INTERNAL_ERROR, e.getMessage(), e);
 			} catch (IllegalAccessException e) {
-				FVLog.log(LogLevel.WARN, null, e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
 				throw new RPCException(RPCException.INTERNAL_ERROR, e.getMessage(), e);
 			} catch (InvocationTargetException e) {
-				FVLog.log(LogLevel.WARN, null, e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
 				throw new RPCException(RPCException.INTERNAL_ERROR, e.getMessage(), e);
 			}
 		} catch (RPCException ex) {
@@ -108,7 +110,7 @@ public class BasicJSONRPCService {
 				JSONResponse jResp = new JSONResponse(ex.getErrorCode(), ex.getMessage(), data, id);
 				writeJSONObject(resp, jResp);
 			} catch (Exception exx) {
-				FVLog.log(LogLevel.WARN, null, exx.getMessage(), exx);
+				logger.warn(exx.getMessage(), exx);
 			}
 		} finally {
 		}
@@ -148,7 +150,7 @@ public class BasicJSONRPCService {
 			while ((sz = reader.read(buff)) != -1) {
 				buffer.append(buff, 0, sz);
 			}
-			FVLog.log(LogLevel.DEBUG, null, "---------JSON RPC request:" + buffer.toString());
+			logger.debug("---------JSON RPC request:" + buffer.toString());
 			return gson.fromJson(buffer.toString(), JSONRequest.class);
 		} finally {
 			if (reader != null)
@@ -169,7 +171,7 @@ public class BasicJSONRPCService {
 		response.setContentType("text/json; charset=utf-8");
 		String json = gson.toJson(jresp, JSONResponse.class);
 		Writer writer = response.getWriter();
-		FVLog.log(LogLevel.DEBUG, null, "---------JSON RPC response:" + json);
+		logger.debug("---------JSON RPC response:" + json);
 		writer.write(json);
 	}
 

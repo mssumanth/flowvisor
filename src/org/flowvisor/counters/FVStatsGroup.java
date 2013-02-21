@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.flowvisor.classifier.FVSendMsg;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.openflow.protocol.OFMessage;
 
 /**
@@ -82,7 +80,6 @@ public class FVStatsGroup {
 	 */
 
 	public static synchronized FVStatsGroup createSharedStats(String owner) {
-		FVLog.log(LogLevel.TRACE, null, "FVStatsGroup: creating a shared reference to a statistics group");
 		if (!sharedStats.containsKey(owner)) {
 			sharedStats.put(owner, new FVStatsGroup());
 		}

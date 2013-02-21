@@ -1,7 +1,7 @@
 package org.flowvisor.api;
 
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -17,6 +17,8 @@ public class APIUserCred {
 	String ip;
 
 	private final static ThreadLocal<APIUserCred> threadCred = new ThreadLocal<APIUserCred>();
+	
+	final static Logger logger = LoggerFactory.getLogger(APIUserCred.class);
 
 	public APIUserCred() {
 		this.userName = "unknown";
@@ -32,7 +34,7 @@ public class APIUserCred {
 	}
 
 	static public String getUserName() {
-		FVLog.log(LogLevel.INFO,null,"APIUserCred: UserName- "+APIUserCred.getThreadCred().userName);
+		logger.info("APIUserCred: UserName- "+APIUserCred.getThreadCred().userName);
 		return APIUserCred.getThreadCred().userName;
 	}
 
@@ -46,7 +48,6 @@ public class APIUserCred {
 	}
 
 	static public APIUserCred getThreadCred() {
-		FVLog.log(LogLevel.TRACE, null, "APIUserCred: getThreadCred" );
 		APIUserCred cred = threadCred.get();
 		if (cred == null) {
 			cred = new APIUserCred();

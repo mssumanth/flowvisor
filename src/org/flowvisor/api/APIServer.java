@@ -11,8 +11,9 @@ import org.apache.xmlrpc.server.XmlRpcStreamServer;
 import org.apache.xmlrpc.webserver.WebServer;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is stolen pretty directly from the apache-xml example code.
@@ -25,6 +26,8 @@ import org.flowvisor.log.LogLevel;
  */
 
 public class APIServer {
+	
+	final static Logger logger = LoggerFactory.getLogger(APIServer.class);
 
 	private static final int default_port = 8080;
 
@@ -43,7 +46,6 @@ public class APIServer {
 	 * @throws Exception
 	 */
 	public static WebServer spawn() throws XmlRpcException, IOException {
-		FVLog.log(LogLevel.TRACE,null,"APIServer: spawn");
 
 		int port;
 
@@ -54,7 +56,7 @@ public class APIServer {
 		}
 
 		if (port == -1) {
-			FVLog.log(LogLevel.INFO, null, "XMLRPC service disabled in config ( API Webserver port == -1)");
+			logger.info("XMLRPC service disabled in config ( API Webserver port == -1)");
 			return null;
 		}
 
@@ -80,8 +82,7 @@ public class APIServer {
 		// XMLRPC is stupid -- need to replace
 		// serverConfig.setEnabledForExtensions(true);
 		serverConfig.setContentLengthOptional(false);
-		FVLog.log(LogLevel.INFO, null,
-				"initializing FlowVisor UserAPI XMLRPC SSL WebServer on port "
+		logger.info("initializing FlowVisor UserAPI XMLRPC SSL WebServer on port "
 						+ port);
 		String sslKeyStore = System.getProperty("javax.net.ssl.keyStore");
 		if (sslKeyStore == null) {

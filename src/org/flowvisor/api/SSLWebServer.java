@@ -5,10 +5,13 @@ import java.net.ServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import org.apache.xmlrpc.webserver.WebServer;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SSLWebServer extends WebServer {
+	
+	final static Logger logger = LoggerFactory.getLogger(SSLWebServer.class);
 
 	public SSLWebServer(int pPort) {
 		super(pPort);
@@ -27,10 +30,10 @@ public class SSLWebServer extends WebServer {
 				throw new RuntimeException(
 						"Need to configure SSL: no ciphers found");
 			else {
-				FVLog.log(LogLevel.DEBUG, null, "SSL Supports "
+				logger.debug("SSL Supports "
 						+ ciphers.length + " Ciphers:: ");
 				for (int i = 0; i < ciphers.length; i++)
-					FVLog.log(LogLevel.DEBUG, null, "		" + ciphers[i]);
+					logger.debug("		" + ciphers[i]);
 			}
 			return sslFactory.createServerSocket(pPort, backlog, addr);
 		} catch (Exception e) {

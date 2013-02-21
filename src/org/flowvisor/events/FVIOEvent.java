@@ -4,8 +4,6 @@
 package org.flowvisor.events;
 
 import org.flowvisor.events.FVEvent;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 
 import java.nio.channels.*;
 

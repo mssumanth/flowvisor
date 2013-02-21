@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.flowvisor.classifier.FVSendMsg;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.openflow.protocol.OFMessage;
 
 public class SendRecvDropStats {
@@ -42,7 +40,6 @@ public class SendRecvDropStats {
 	}
 
 	public void increment(FVStatsType stat, FVSendMsg from, OFMessage ofm) {
-		FVLog.log(LogLevel.TRACE, null, "SendRecvDropStats: increment");
 		this.stats.get(stat).increment(from, ofm);
 	}
 

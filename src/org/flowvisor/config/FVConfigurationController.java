@@ -4,9 +4,6 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
-
 public class FVConfigurationController {
 
 	private ConfDBSettings settings = null;
@@ -67,6 +64,4 @@ public class FVConfigurationController {
 	public void shutdown() {
 		settings.shutdown();
 	}
-
-	
 }

@@ -2,8 +2,8 @@ package org.flowvisor.api;
 
 import org.apache.xmlrpc.server.XmlRpcErrorLogger;
 import org.flowvisor.exceptions.FVException;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 
 
 /**
@@ -14,6 +14,8 @@ import org.flowvisor.log.LogLevel;
  */
 
 public class FVRpcErrorLogger extends XmlRpcErrorLogger {
+	
+	final static Logger logger = Logger.getLogger(FVRpcErrorLogger.class);
 
 	/**
 	 * Wrapper around FVLog;
@@ -26,23 +28,27 @@ public class FVRpcErrorLogger extends XmlRpcErrorLogger {
 	 * @param throwable an exception to log
 	 */
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void log(String msg, Throwable throwable) {
-		LogLevel logLevel = LogLevel.WARN;
+		Priority pLevel = Priority.WARN;
 		Throwable cause = throwable.getCause();
 		if (cause instanceof FVException ||
 				cause instanceof javax.net.ssl.SSLException)
-			logLevel = LogLevel.DEBUG;
+			pLevel = Priority.DEBUG;
 		if (cause != null)
 			throwable = cause;	// skip down to the inner exception
-		StackTraceElement[] stackTrace= throwable.getStackTrace();
-		FVLog.log(logLevel, null, msg, "(exception = ",throwable.getClass(),")" );
+		 StackTraceElement[] stackTrace= throwable.getStackTrace();
+		//logger.log(pLevel, msg + "\n The exception is = ", throwable);
+		logger.log(pLevel, msg + " exception  = " + throwable.getClass());
 		for(int i=0; i< stackTrace.length; i++)
-			FVLog.log(logLevel, null, "     at ", stackTrace[i]);
+			logger.log(pLevel, "at " + stackTrace[i]);
+
+		//logger.l7dlog(pLevel, msg + "\n The exception is = ", throwable);
 	}
 
 	@Override
 	public void log(String msg) {
-		FVLog.log(LogLevel.INFO, null, msg);
+		logger.info(msg);
 	}
 }

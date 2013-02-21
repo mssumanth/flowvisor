@@ -3,8 +3,10 @@ package org.flowvisor.message;
 import java.util.List;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.statistics.ClassifiableStatistic;
 import org.flowvisor.message.statistics.FVDescriptionStatistics;
 import org.flowvisor.ofswitch.TopologyConnection;
@@ -16,6 +18,8 @@ import org.openflow.protocol.statistics.OFStatistics;
 
 public class FVStatisticsReply extends OFStatisticsReply implements
 		Classifiable, Slicable, TopologyControllable, SanityCheckable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVStatisticsReply.class);
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
@@ -32,7 +36,7 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 			FVSlicer fvSlicer = FVMessageUtil
 					.untranslateXid(this, fvClassifier);
 			if (fvSlicer == null)
-				FVLog.log(LogLevel.WARN, fvClassifier,
+				logger.warn(fvClassifier.getName(),
 						"dropping unclassifiable msg: " + this);
 			else
 				fvSlicer.sendMsg(this, fvClassifier);
@@ -56,12 +60,12 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 		List<OFStatistics> statList = this.getStatistics();
 		for (OFStatistics stat : statList) {
 			if (stat instanceof OFDescriptionStatistics) {
-				FVLog.log(LogLevel.DEBUG, topologyConnection,
+				logger.debug(topologyConnection.getName(),
 						" got descriptions stats: " + stat);
 				topologyConnection
 						.setDescriptionStatistics((FVDescriptionStatistics) stat);
 			} else {
-				FVLog.log(LogLevel.DEBUG, topologyConnection,
+				logger.debug(topologyConnection.getName(),
 						"ignoring unrequested stat: " + stat);
 			}
 		}
@@ -78,7 +82,7 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 		if (count == msgLen)
 			return true;
 		else {
-			FVLog.log(LogLevel.WARN, null, "msg failed sanity check: " + this);
+			logger.warn("msg failed sanity check: " + this);
 			return false;
 		}
 	}

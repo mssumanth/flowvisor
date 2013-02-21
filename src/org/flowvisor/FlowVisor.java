@@ -3,6 +3,7 @@ package org.flowvisor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -19,10 +20,7 @@ import org.flowvisor.config.FlowvisorImpl;
 import org.flowvisor.events.FVEventHandler;
 import org.flowvisor.events.FVEventLoop;
 import org.flowvisor.exceptions.UnhandledEvent;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.StderrLogger;
-import org.flowvisor.log.ThreadLogger;
+import org.flowvisor.ThreadLogger;
 import org.flowvisor.message.FVMessageFactory;
 import org.flowvisor.ofswitch.OFSwitchAcceptor;
 import org.flowvisor.ofswitch.TopologyController;
@@ -30,6 +28,17 @@ import org.openflow.example.cli.Option;
 import org.openflow.example.cli.Options;
 import org.openflow.example.cli.ParseException;
 import org.openflow.example.cli.SimpleCLI;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.PatternLayout;
+
+import org.apache.log4j.PropertyConfigurator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.log4j.ConsoleAppender;
+import org.productivity.java.syslog4j.impl.log4j.Syslog4jAppender;
 
 public class FlowVisor {
 	// VENDOR EXTENSION ID
@@ -53,8 +62,11 @@ public class FlowVisor {
 
 	FVMessageFactory factory;
 
+	final static Logger logger = LoggerFactory.getLogger(FlowVisor.class);
+	
+
 	private static final Options options = Options.make(new Option[] {
-			new Option("d", "debug", LogLevel.INFO.toString(),
+			new Option("d", "debug", Level.INFO.toString(),
 					"Override default logging threshold in config"),
 			new Option("l", "logging", "Log to stderr instead of syslog"),
 			new Option("p", "port", 0, "Override port from config"),
@@ -107,18 +119,16 @@ public class FlowVisor {
 		try {
 			FlowvisorImpl.getProxy().setAPIWSPort(port);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, null, "Failed to set api port");
+			logger.warn("Failed to set api port");
 		}
 	}
 
 	public void setJettyPort(int port){
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Entered setJettyPort");
 		try {
 			FlowvisorImpl.getProxy().setJettyPort(port);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, null, "Failed to set jetty port");
+			logger.warn("Failed to set jetty port");
 		}
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Entered setJettyPort");
 	}
 
 	/**
@@ -148,11 +158,12 @@ public class FlowVisor {
 		FlowVisor.setInstance(this);
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 				// init polling loop
+
 		
-		FVLog.log(LogLevel.INFO, null, "initializing poll loop");
+		logger.info("initializing poll loop");
 		FVEventLoop pollLoop = new FVEventLoop();
 		
-		FVLog.log(LogLevel.INFO,null,"FlowVisor: spawning Jetty Server");
+		logger.info("FlowVisor: spawning Jetty Server");
 		JettyServer.spawnJettyServer(FVConfig.getJettyPort());//jettyPort);
 		
 		if (port == 0)
@@ -167,10 +178,10 @@ public class FlowVisor {
 		handlers.add(acceptor);
 		// start XMLRPC UserAPI server; FIXME not async!
 		try {
-			FVLog.log(LogLevel.INFO,null,"FlowVisor: Spawning APIServer");
+			logger.info("FlowVisor: Spawning APIServer");
 			this.apiServer = APIServer.spawn();
 		} catch (Exception e) {
-			FVLog.log(LogLevel.ERROR, null, "failed to spawn APIServer");
+			logger.error("failed to spawn APIServer");
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -187,12 +198,11 @@ public class FlowVisor {
 			this.checkPointConfig();
 		}
 		if (!flowdb)
-			FVLog.log(LogLevel.INFO, null, "flowdb: Disabled");
+			logger.info("flowdb: Disabled");
 
 		// start event processing
 		pollLoop.doEventLoop();
 		
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Exited run");
 	}
 
 	/**
@@ -206,7 +216,11 @@ public class FlowVisor {
 	 */
 
 	public static void main(String args[]) throws Throwable {
+		
+		BasicConfigurator.configure();
+		
 		ThreadLogger threadLogger = new ThreadLogger();
+		
 		Thread.setDefaultUncaughtExceptionHandler(threadLogger);
 		long lastRestart = System.currentTimeMillis();
 		FVConfigurationController.init(new ConfDBHandler());
@@ -229,19 +243,16 @@ public class FlowVisor {
 				System.exit(0);
 			} catch (Throwable e) {
 				e.printStackTrace();
-				FVLog.log(LogLevel.FATAL, null, "MAIN THREAD DIED!!!");
-				FVLog.log(LogLevel.FATAL, null, "----------------------------");
+				logger.error("----------------------------");
 				threadLogger.uncaughtException(Thread.currentThread(), e);
-				FVLog.log(LogLevel.FATAL, null, "----------------------------");
+				logger.error("----------------------------");
 				if ((lastRestart + 5000) > System.currentTimeMillis()) {
 					System.err.println("respawning too fast -- DYING");
-					FVLog.log(LogLevel.FATAL, null,
-							"respawning too fast -- DYING");
+					logger.error("respawning too fast -- DYING");
 					fv.tearDown();
 					throw e;
 				} else {
-					FVLog.log(LogLevel.FATAL, null,
-							"restarting after main thread died");
+					logger.error("restarting after main thread died");
 					lastRestart = System.currentTimeMillis();
 					fv.tearDown();
 				}
@@ -253,10 +264,11 @@ public class FlowVisor {
 	}
 
 	private void parseArgs(String[] args) {
+
 		SimpleCLI cmd = null;
+		
 		try {
 			cmd = SimpleCLI.parse(options, args);
-
 		} catch (ParseException e) {
 			usage("ParseException: " + e.toString());
 		}
@@ -269,34 +281,57 @@ public class FlowVisor {
 		else{
 			setConfigFile(args[i]);
 		}
+		if (cmd.hasOption("l")){			
+			ConsoleAppender consoleApp = new ConsoleAppender();
+			consoleApp.setWriter(new OutputStreamWriter(System.out));
+			String PATTERN = "%d [%p|%c|%C{1}] %m%n";
+			consoleApp.setLayout(new PatternLayout(PATTERN)); 
+			
+			consoleApp.activateOptions();
+			org.apache.log4j.Logger.getRootLogger().removeAllAppenders();
+			org.apache.log4j.Logger.getRootLogger().addAppender(consoleApp);
+			
+			//If only -l is specified then the default log level is set to DEBUG! 
+			if(!cmd.hasOption("d")){
+				System.out.println("Use -d along with -l to get the desired level of trace, else DEBUG traces appear on the console!");
+				org.apache.log4j.Logger.getRootLogger().setLevel(Level.toLevel("DEBUG", Level.INFO));
+			}
+		}		
+		
 		if (cmd.hasOption("d")) {
-			FVLog.setCmdLog();
-			FVLog.setThreshold(LogLevel.valueOf(cmd.getOptionValue("d")));
-			System.err.println("Set default logging threshold to "
-					+ FVLog.getThreshold());
+			if(!cmd.hasOption("l")){
+				Syslog4jAppender syslogApp = new Syslog4jAppender();
+				syslogApp.setProtocol("unix_syslog");
+				org.apache.log4j.Logger.getRootLogger().removeAllAppenders();
+				org.apache.log4j.Logger.getRootLogger().addAppender(syslogApp);
+			}
+			String strLevel = cmd.getOptionValue("d");
+			org.apache.log4j.Logger.getRootLogger().setLevel(Level.toLevel(strLevel, Level.INFO));
+			
+		} 
+		
+		if (!cmd.hasOption("l") && !cmd.hasOption("d")) {
+			String propFile = System.getProperty("fvlog.configuration");
+			PropertyConfigurator.configureAndWatch(propFile, 2000L);
 		}
-		if (cmd.hasOption("l")) {
-			System.err.println("Setting debugging mode: all logs to stderr");
-			FVLog.setDefaultLogger(new StderrLogger());
-		}
+		
 		if (cmd.hasOption("p")) {
 			int p = Integer.valueOf(cmd.getOptionValue("p"));
 			setPort(p);
-			System.err.println("Writting port to config: setting to "
+			System.err.println("Writing port to config: setting to "
 					+ p);
 		}
 		if(cmd.hasOption("j")){
 			int jp = Integer.valueOf(cmd.getOptionValue("j"));
 			setJettyPort(jp);
-			System.err.println("Writting jetty port to config: setting to "
+			System.err.println("Writing jetty port to config: setting to "
 					+ jp);
 		}
 	}
 
 	private void tearDown() {
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Entered tearDown");
 		if (this.apiServer != null){
-			FVLog.log(LogLevel.INFO,null,"FlowVisor: shutting down the api server");
+			logger.info("FlowVisor: shutting down the api server");
 			this.apiServer.shutdown(); // shutdown the API Server
 		}
 		List<FVEventHandler> tmp = this.handlers;
@@ -306,7 +341,6 @@ public class FlowVisor {
 			it.remove();
 			handler.tearDown();
 		}
-		FVLog.log(LogLevel.TRACE,null,"FlowVisor: Exited tearDown");
 	}
 
 	/**
@@ -395,29 +429,27 @@ public class FlowVisor {
 			if (!FVConfig.getCheckPoint())
 				return;
 		} catch (ConfigError e1) {
-			FVLog.log(LogLevel.WARN, null,
-					"Checkpointing config not set: assuming you want checkpointing");
+			logger.warn("Checkpointing config not set: assuming you want checkpointing");
 		}
 
 		try {
 			FVConfig.writeToFile(tmpFile);
 		} catch (FileNotFoundException e) {
-			FVLog.log(LogLevel.FATAL, null,
-					"failed to save config: tried to write to '" + tmpFile
-							+ "' but got FileNotFoundException");
+			logger.error("failed to save config: tried to write to '" + tmpFile
+					+ "' but got FileNotFoundException");
+
 			return;
 		}
 		// sometimes, Java has the stoopidest ways of doing things :-(
 		File tmp = new File(tmpFile);
 		if (tmp.length() == 0) {
-			FVLog.log(LogLevel.FATAL, null,
-					"failed to save config: tried to write to '" + tmpFile
-							+ "' but wrote empty file");
+			logger.error("failed to save config: tried to write to '" + tmpFile
+					+ "' but wrote empty file");
 			return;
 		}
 
 		tmp.renameTo(new File(this.configFile));
-		FVLog.log(LogLevel.INFO, null, "Saved config to disk at "
+		logger.info("Saved config to disk at "
 				+ this.configFile);
 	}
 

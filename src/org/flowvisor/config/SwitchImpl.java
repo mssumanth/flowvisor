@@ -10,8 +10,10 @@ import java.sql.Types;
 import java.util.HashMap;
 
 import org.flowvisor.flows.FlowSpaceUtil;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFFlowMod;
 
@@ -48,6 +50,8 @@ public class SwitchImpl implements Switch {
 	private static String DFLOWENTRY = "DELETE FROM FlowTableEntry WHERE id = ?";
 
 	private ConfDBSettings settings = null;
+	
+	final static Logger logger = LoggerFactory.getLogger(SwitchImpl.class);
 		
 	private SwitchImpl() {}
 	
@@ -72,7 +76,7 @@ public class SwitchImpl implements Switch {
 			else 
 				throw new ConfigError("Flood permission for dpid " + dpid + " not found");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -96,7 +100,7 @@ public class SwitchImpl implements Switch {
 				throw new ConfigError("Unable to set flood permission for dpid " + dpid);
 			notify(dpid, FFLOOD, flood_perm);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -121,7 +125,7 @@ public class SwitchImpl implements Switch {
 			if (set.next())
 				sliceid = set.getInt("id");
 			else {
-				FVLog.log(LogLevel.WARN, null, "Unknown slice "+ sliceName + " when pushing flow mod to db. Returning...");
+				logger.warn("Unknown slice "+ sliceName + " when pushing flow mod to db. Returning...");
 				return 0;
 			}
 			ps = conn.prepareStatement(GSWITCHID);
@@ -220,7 +224,7 @@ public class SwitchImpl implements Switch {
 			set.next();
 			return set.getInt(1);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -240,7 +244,7 @@ public class SwitchImpl implements Switch {
 			ps.setInt(1, id);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -289,7 +293,7 @@ public class SwitchImpl implements Switch {
 			//writer.endObject();
 				
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -371,7 +375,7 @@ public class SwitchImpl implements Switch {
 			ps.setString(7, (String) row.get(DPDESC));
 			ps.setInt(8, ((Long) row.get(CAPA)).intValue());
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Insertion failed... siliently.");
+				logger.warn("Insertion failed... siliently.");
 			/*
 			 * FIXME Selecting the flow rule id doesn't make sense. 
 			 * 

@@ -16,14 +16,16 @@ import org.flowvisor.exceptions.PermissionDeniedException;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.FlowSpaceUtil;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.flowvisor.ofswitch.TopologyController;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class FVUserAPIJSONImpl extends FVUserAPIImpl implements FVUserAPIJSON {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVRpcErrorLogger.class);
 
 	@Override
 	public Collection<FlowEntry> listFlowSpace() throws ConfigError {
@@ -69,12 +71,11 @@ public class FVUserAPIJSONImpl extends FVUserAPIImpl implements FVUserAPIJSON {
 				}
 
 				changeIDs.add(entry.getId());
-				FVLog.log(LogLevel.INFO, null, logMsg);
+				logger.info(logMsg);
 			}
 			// update the indexes at the end, not with each rule
 			FlowVisor.getInstance().checkPointConfig();
-			FVLog.log(LogLevel.INFO, null,
-					"Signalling FlowSpace Update to all event handlers");
+			logger.info("Signalling FlowSpace Update to all event handlers");
 			FlowSpaceImpl.getProxy().notifyChange(flowSpace); // signals that FS has changed
 			
 		}
