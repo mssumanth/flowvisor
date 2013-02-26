@@ -20,8 +20,7 @@ public class FVStatisticsRequest extends OFStatisticsRequest implements
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
-		logger.warn(fvClassifier.getName(), "dropping unexpected msg: "
-				+ this);
+		logger.warn( "{} dropping unexpected msg: {}", fvClassifier.getName(), this.getClass());
 	}
 
 	@Override
@@ -61,7 +60,7 @@ public class FVStatisticsRequest extends OFStatisticsRequest implements
 		if (count == msgLen)
 			return true;
 		else {
-			logger.warn("msg failed sanity check: " + this);
+			logger.warn("msg failed sanity check: {}", this.getClass());
 			return false;
 		}
 	}

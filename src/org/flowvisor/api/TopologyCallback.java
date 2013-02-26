@@ -156,8 +156,8 @@ public class TopologyCallback implements Runnable {
 			//this.client.execute(this.methodName, new Object[] { cookie });
 			this.client.execute(this.methodName,new Object[]{ null});
 		} catch (XmlRpcException e) {
-			logger.warn(TopologyController.getRunningInstance().getName() + 
-					"topoCallback to URL=" + URL + " failed: " + e);
+			logger.warn(TopologyController.getRunningInstance().getName() , 
+					"topoCallback to URL= {} failed: {}" , URL , e);
 		}
 
 	}
@@ -196,11 +196,11 @@ public class TopologyCallback implements Runnable {
 			responseCode = connection.getResponseCode();
 
 			if (responseCode == HttpURLConnection.HTTP_OK) {
-				logger.info("HTTP topology callback '" + this.methodName + " to " + this.URL + "'successful.");
+				logger.info("HTTP topology callback '{} to {}' successful." , this.methodName , this.URL);
 			} else
-				logger.warn("HTTP topology callback '" + this.methodName + " to " + this.URL + "' failed on server.");
+				logger.warn("HTTP topology callback '{} to {}' failed on server." , this.methodName , this.URL);
 		} catch (Exception e) {
-			logger.warn("HTTP topology callback '" + this.methodName + " to " + this.URL + "'failed due to " + e.getLocalizedMessage());
+			logger.warn("HTTP topology callback '{} to {}' failed due to {} " , this.methodName , this.URL , e.getLocalizedMessage());
 		} finally {
 			if (writer != null){
 				try {

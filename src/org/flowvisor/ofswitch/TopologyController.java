@@ -101,9 +101,8 @@ public class TopologyController extends OFSwitchAcceptor {
 				FVConfig.setSliceHost(TopoUser, "localhost");
 				FVConfig.setSlicePort(TopoUser, port);
 			} catch (ConfigError e) {
-				logger.error(tc.getName(),
-						"tried to register topology controller info, but topo user '"
-								+ TopoUser + "' not found: " + e);
+				logger.error("{} tried to register topology controller info, but topo user '{}' not found: {}", tc.getName(),
+						TopoUser, e);
 			}
 		} catch (IOException e) {
 			logger.error("failed to spawn TopologyController: " + e);
@@ -186,17 +185,16 @@ public class TopologyController extends OFSwitchAcceptor {
 	 * @return
 	 */
 	private synchronized void processUpdate() {
-		logger.debug(this.getName()+ "processing updates");
+		logger.debug("{} processing updates", this.getName());
 		for (Iterator<LinkAdvertisement> it = this.latestProbes.keySet()
 				.iterator(); it.hasNext();) {
 			LinkAdvertisement linkAdvertisement = it.next();
 			long now = System.currentTimeMillis();
 			long thisProbe = latestProbes.get(linkAdvertisement).longValue();
 			if ((thisProbe + this.timeoutPeriod) < now) {
-				logger.info(this.getName(), "timeout: removing link "
-						+ linkAdvertisement);
-				logger.debug(this.getName(), "timeout: " + thisProbe + "+"
-						+ this.timeoutPeriod + " > " + now);
+				logger.info("{} timeout: removing link {}", this.getName(), linkAdvertisement);
+				logger.debug("{} timeout: {} + {} > {}", this.getName(), thisProbe 
+						+ this.timeoutPeriod + now);
 				this.doCallback = true;
 				it.remove();
 			}
@@ -210,7 +208,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	}
 
 	private synchronized void processCallback() {
-		logger.info(this.getName(), "topology changed: doing callbacks");
+		logger.info("{} topology changed: doing callbacks", this.getName());
 		for (TopologyCallback topologyCallback : this.generalCallBackDB.values())
 			topologyCallback.spawn();
 		this.doCallback = false;
@@ -226,8 +224,9 @@ public class TopologyController extends OFSwitchAcceptor {
 				logger.error("ssc.accept() returned null !?! FIXME!");
 				return;
 			}
-			logger.info(this.getName(), "got new connection: "
-					+ sock.socket().getRemoteSocketAddress());
+			/*logger.info("{} got new connection: {}", this.getName(),
+					sock.socket().getRemoteSocketAddress());*/
+			logger.info("{} got new connection", this.getName());
 			TopologyConnection tc = new TopologyConnection(this, pollLoop, sock);
 			tc.init();
 			topologyConnections.add(tc);
@@ -277,7 +276,7 @@ public class TopologyController extends OFSwitchAcceptor {
 		for (TopologyConnection tc : this.topologyConnections)
 			if (tc.isConnected())
 				dpids.add(tc.getDataPathID());
-		logger.debug("List of dpids connected to the topology controller: " + dpids);
+		logger.debug("List of dpids connected to the topology controller: {}" , dpids);
 		return dpids;
 	}
 
@@ -297,7 +296,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	public synchronized void reportProbe(LinkAdvertisement linkAdvertisement) {
 		if (!this.latestProbes.containsKey(linkAdvertisement)) {
 			this.doCallback = true;
-			logger.info(this.getName(), "adding link " + linkAdvertisement);
+			logger.info("{} adding link {}", this.getName(), linkAdvertisement);
 		}
 		this.latestProbes.put(linkAdvertisement, Long.valueOf(System
 				.currentTimeMillis()));
@@ -314,8 +313,7 @@ public class TopologyController extends OFSwitchAcceptor {
 		try {
 			return FVConfig.getTopologyServer();
 		} catch (ConfigError e) {
-			logger.warn("Creating config entry for topology server run parameter"
-					+ "=false");
+			logger.warn("Creating config entry for topology server run parameter=false");
 			try {
 				FVConfig.setTopologyServer(false);
 			} catch (ConfigError e1) {
@@ -372,7 +370,7 @@ public class TopologyController extends OFSwitchAcceptor {
 	@Override
 	public void tearDown() {
 		super.tearDown();
-		logger.warn(this.getName(), "shutting down");
+		logger.warn("{} shutting down", this.getName());
 		for (Iterator<TopologyConnection> it = this.topologyConnections
 				.iterator(); it.hasNext();) {
 			TopologyConnection topologyConnection = it.next();

@@ -504,7 +504,7 @@ public class SliceImpl implements Slice {
 			ps.setString(10, drop_policy);
 			ps.setBoolean(11, true);
 			if (ps.executeUpdate() == 0)
-				logger.warn("Slice " + sliceName + " creation had no effect.");
+				logger.warn("Slice {} creation had no effect." , sliceName);
 		} catch (SQLException e) {
 			logger.warn(e.getMessage());
 		} finally {

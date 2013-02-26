@@ -21,8 +21,7 @@ public class FVActionVendor extends OFActionVendor implements SlicableAction {
 	public void slice(List<OFAction> approvedActions, OFMatch match,
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
-		logger.error(fvSlicer.getName(),
-				"action slicing unimplemented for type: " + this);
+		logger.error("{} action slicing unimplemented for type: {}", fvSlicer.getName(), this.getClass());
 		approvedActions.add(this);
 	}
 

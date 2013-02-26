@@ -39,16 +39,14 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 
 	@Override
 	public void sliceFromController(FVClassifier fvClassifier, FVSlicer fvSlicer) {
-		logger.debug(fvSlicer.getName()+ "recv from controller: ", this);
+		logger.debug("{} recv from controller: {}",fvSlicer.getName(), this.getClass());
 		FVMessageUtil.translateXid(this, fvClassifier, fvSlicer);
 
 		// make sure that this slice can access this bufferID
 		if ((this.command != OFFlowMod.OFPFC_DELETE 
 				&& this.command != OFFlowMod.OFPFC_DELETE_STRICT) 
 				&& !fvSlicer.isBufferIDAllowed(this.getBufferId())) {
-			logger.warn(fvSlicer.getName()+
-					"EPERM buffer_id ", this.getBufferId(), " disallowed: "
-							, this);
+			logger.warn("{} EPERM - This buffer_id is disallowed: {}", fvSlicer.getName(), this.getClass());
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 						OFBadRequestCode.OFPBRC_BUFFER_UNKNOWN, this), fvSlicer);
 			return;
@@ -61,7 +59,7 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 					fvClassifier, fvSlicer);
 		} catch (ActionDisallowedException e) {
 			
-			logger.warn(fvSlicer.getName()+ "EPERM bad actions: ", this);
+			logger.warn("{} EPERM bad actions: {}", fvSlicer.getName(), this.getClass());
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 					e.getError(), this), fvSlicer);
 			return;
@@ -115,12 +113,11 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 		
 
 		if (expansions == 0) {
-			logger.warn(fvSlicer.getName()+ "dropping illegal fm: ", this);
+			logger.warn("{} dropping illegal fm: {}",fvSlicer.getName(), this.getClass());
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 					OFFlowModFailedCode.OFPFMFC_EPERM, this), fvSlicer);
 		} else
-			logger.debug(fvSlicer.getName()+ "expanded fm ", expansions,
-					" times: ", this);
+			logger.debug("{} expanded fm {} times: {}",fvSlicer.getName(), expansions, this.getClass());
 	}
 	
 

@@ -23,8 +23,7 @@ public class FVAggregateStatisticsRequest extends
 
 	@Override
 	public void classifyFromSwitch(OFMessage msg, FVClassifier fvClassifier) {
-		logger.warn(fvClassifier.getName(), "dropping unexpected msg: "
-				+ msg);
+		logger.warn("{} dropping unexpected msg: {}", fvClassifier.getName(), msg);
 	}
 
 }

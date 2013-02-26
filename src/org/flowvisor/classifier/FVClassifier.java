@@ -111,7 +111,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			this.msgStream = new FVMessageAsyncStream(sock, this.factory, this,
 					this.stats);
 		} catch (IOException e) {
-			logger.error(this.getName()+"IOException in constructor!");
+			logger.error(this.getName(),"IOException in constructor!");
 			e.printStackTrace();
 		}
 		this.sock = sock;
@@ -204,7 +204,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			}
 		}
 		if (!found)
-			logger.info(this.getName()+" asked to remove non-existant port: ", phyPort);
+			logger.info(this.getName()," asked to remove non-existant port: {}", phyPort);
 		this.activePorts.remove(phyPort.getPortNumber());
 	}
 
@@ -265,13 +265,11 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			FlowvisorImpl.addListener(this);
 		} catch (ConfigError e) {
 			try {
-				logger.warn(this.getName() + "config: stats_desc_hack "
-						+ " not set; defaulting to off");
+				logger.warn(this.getName() , "config: stats_desc_hack not set; defaulting to off");
 				this.wantStatsDescHack = false;
 				FVConfig.setStatsDescHack(false);
 			} catch (ConfigError e1) {
-				throw new RuntimeException("Tried to set default "
-						+ "stats_desc_hack=true, but got: " + e1);
+				throw new RuntimeException("Tried to set default stats_desc_hack=true, but got: " + e1);
 			}
 		}
 		updateFloodPerms();
@@ -293,8 +291,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			/*String entry = FVConfig.SWITCHES + FVConfig.FS + dpid + FVConfig.FS
 					+ FVConfig.FLOOD_PERM;*/
 			this.floodPermsSlice = FVConfig.getFloodPerm(dpid);
-			logger.debug(this.getName()+"giving flood perms to slice: "
-			+ this.floodPermsSlice);
+			logger.debug(this.getName(),"giving flood perms to slice: {}"
+			, this.floodPermsSlice);
 
 			// note: watch() is smart and won't double enter this
 			if (doneID)
@@ -323,13 +321,12 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	@Override
 	public void handleEvent(FVEvent e) throws UnhandledEvent {
 		if (this.shutdown) {
-			logger.warn(this.getName()+"is shutdown: ignoring: " + e);
+			logger.warn(this.getName(),"is shutdown: ignoring: {}" , e);
 			return;
 		}
 		if (Thread.currentThread().getId() != this.getThreadContext()) {
 			// this event was sent from a different thread context
-			logger.debug(this.getName()+"FVClassifier: This event was sent from " +
-					"a different thread context");
+			logger.debug(this.getName(),"FVClassifier: This event was sent from a different thread context");
 			loop.queueEvent(e); // queue event
 			return; // and process later
 		}
@@ -357,7 +354,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	private void handleKeepAlive(FVEvent e) {
 		if (!this.keepAlive.isAlive()) {
-			logger.warn(this.getName()+"keepAlive timeout");
+			logger.warn(this.getName(),"keepAlive timeout");
 			this.tearDown();
 			return;
 		}
@@ -418,17 +415,17 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				if (newMsgs != null) {
 					for (OFMessage m : newMsgs) {
 						if (m == null) {
-							logger.error(this.getName()+
+							logger.error(this.getName(),
 									"got an unparsable OF Message ",
 									"(msgStream.read() returned a null):",
 									"trying to ignore it");
 							continue;
 						}
-						logger.debug(this.getName()+ "read ", m);
+						logger.debug(this.getName(), "read {}", m);
 						if ((m instanceof SanityCheckable)
 								&& (!((SanityCheckable) m).isSane())) {
-							logger.warn(this.getName()+
-									"msg failed sanity check; dropping: ", m);
+							logger.warn(this.getName(),
+									"msg failed sanity check; dropping: {}", m);
 							continue;
 						}
 						if (switchInfo != null) {
@@ -448,8 +445,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				msgStream.flush();
 		} catch (IOException e1) {
 			// connection to switch died; tear it down
-			logger.info(this.getName()+
-					"got IO exception; closing because : ", e1);
+			logger.info(this.getName(),
+					"got IO exception; closing because : {}", e1);
 			this.tearDown();
 			return;
 		}
@@ -461,7 +458,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 */
 	@Override
 	public void tearDown() {
-		logger.warn(this.getName()+ "tearing down");
+		logger.warn(this.getName(), "tearing down");
 		this.loop.unregister(this.sock, this);
 		this.shutdown = true;
 		try {
@@ -472,7 +469,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			for (FVSlicer fvSlicer : tmpMap.values())
 				fvSlicer.closeDown(false);
 		} catch (IOException e) {
-			logger.warn(this.getName()+ "weird error on close:: ", e);
+			logger.warn(this.getName(), "weird error on close:: {}", e);
 		}
 		FlowSpaceImpl.removeListener(this);
 		FlowvisorImpl.removeListener(this);
@@ -499,7 +496,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 * @param m
 	 */
 	private void classifyOFMessage(OFMessage msg) {
-		logger.debug(this.getName()+ "received from switch: ", msg);
+		logger.debug(this.getName(), "received from switch: {}", msg);
 		((Classifiable) msg).classifyFromSwitch(this); // msg specific handling
 	}
 
@@ -515,10 +512,9 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		switch (m.getType()) {
 		case HELLO: // aleady sent our hello; just NOOP here
 			if (m.getVersion() != OFMessage.OFP_VERSION) {
-				logger.warn(this.getName()+
-						"Mismatched version from switch ", sock, " Got: ", m
-								.getVersion(), " Wanted: ",
-						OFMessage.OFP_VERSION);
+				logger.warn(this.getName(),
+						"Mismatched version from switch ", sock, " Got: {} Wanted: {}", m
+								.getVersion(), OFMessage.OFP_VERSION);
 				FVError fvError = (FVError) this.factory
 						.getMessage(OFType.ERROR);
 				fvError.setErrorCode(OFHelloFailedCode.OFPHFC_INCOMPATIBLE);
@@ -546,8 +542,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			 * stats.setStatisticType(OFStatisticsType.DESC);
 			 */
 			switchName = "dpid=" + FlowSpaceUtil.dpidToString(this.getDPID());
-			logger.info(this.getName()+ "identified switch as " + switchName
-					+ " on " + this.sock);
+			logger.info(this.getName(), "identified switch as {} on {}" , switchName
+					, this.sock);
 			FlowSpaceImpl.addListener(this); // register for FS updates
 			this.connectToControllers(null); // connect to controllers
 			// TODO create switch entry in db.
@@ -555,8 +551,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			updateFloodPerms();
 			break;
 		default:
-			logger.warn(this.getName()+ "Got unknown message type " + m
-					+ " to unidentified switch");
+			logger.warn(this.getName(), "Got unknown message type {} to unidentified switch" , m);
 		}
 	}
 
@@ -580,7 +575,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				else
 					this.switchFlowMap = fm;
 			} catch (ConfigError e) {
-				logger.warn(this.getName()+"Unable to fetch Flow Space : " + e.getMessage());
+				logger.warn(this.getName(),"Unable to fetch Flow Space : {}" , e.getMessage());
 				//FVLog.log(LogLevel.FATAL, this, "Unable to fetch Flow Space : " + e.getMessage());
 				return;
 			}
@@ -597,15 +592,15 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			strbuf.append(sliceName);
 		}
 
-		logger.debug(this.getName()+ "slices with access=", strbuf
+		logger.debug(this.getName(), "slices with access= {}", strbuf
 				.toString());
 		// foreach slice, make sure it has access to this switch
 		for (String sliceName : newSlices) {
 			if (slicerMap == null)
 				throw new NullPointerException("slicerMap is null!?");
 			if (!slicerMap.containsKey(sliceName)) {
-				logger.info(this.getName()+
-						"making new connection to slice " + sliceName);
+				logger.info(this.getName(),
+						"making new connection to slice {}" , sliceName);
 				FVSlicer newSlicer = new FVSlicer(this.loop, this, sliceName);
 				slicerMap.put(sliceName, newSlicer); // create new slicer in
 				// this same EventLoop
@@ -618,8 +613,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		for (String sliceName : slicerMap.keySet()) {
 			if (!newSlices.contains(sliceName)) {
 				// this slice no longer has access to this switch
-				logger.info(this.getName()+
-						"disconnecting: removed from FlowSpace: " + sliceName);
+				logger.info(this.getName(),
+						"disconnecting: removed from FlowSpace: {}" , sliceName);
 				slicerMap.get(sliceName).closeDown(false);
 				deletelist.add(sliceName);
 			}
@@ -647,8 +642,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	public void tearDownSlice(String sliceName) {
 		if (slicerMap != null) {
 			slicerMap.remove(sliceName);
-			logger.debug(this.getName()+ "tore down slice " + sliceName
-					+ " on request");
+			logger.debug(this.getName(), "tore down slice {} on request." , sliceName);
 		}
 	}
 
@@ -678,27 +672,27 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	public void sendMsg(OFMessage msg, FVSendMsg from) {
 		if (this.msgStream != null) {
-			logger.debug(this.getName()+ "send to switch:", msg);
+			logger.debug(this.getName(), "send to switch: {}", msg);
 			try {
 				this.msgStream.testAndWrite(msg);
 			} catch (BufferFull e) {
-				logger.error(this.getName()+"framing BUG; tearing down: got ", e);
+				logger.error(this.getName(),"framing BUG; tearing down: got {}", e);
 				/*FVLog.log(LogLevel.FATAL, this,
 						"framing BUG; tearing down: got ", e);*/
 				this.loop.queueEvent(new TearDownEvent(this, this));
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (MalformedOFMessage e) {
 				e.printStackTrace();
-				logger.error(this.getName()+"BUG: bad msg: ", e);
+				logger.error(this.getName(),"BUG: bad msg: {}", e);
 				//FVLog.log(LogLevel.FATAL, this, "BUG: bad msg: ", e);
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (IOException e) {
-				logger.warn(this.getName()+
-						"restarting connection, got IO error: ", e);
+				logger.warn(this.getName(),
+						"restarting connection, got IO error: {}", e);
 				this.tearDown();
 			}
 		} else {
-			logger.warn(this.getName()+ "dropping msg: no connection: ",
+			logger.warn(this.getName(), "dropping msg: no connection: {}",
 							msg);
 			this.stats.increment(FVStatsType.DROP, from, msg);
 		}

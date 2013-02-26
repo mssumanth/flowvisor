@@ -22,8 +22,7 @@ public class FVActionTransportLayerDestination extends
 	public void slice(List<OFAction> approvedActions, OFMatch match,
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
-		logger.error(fvSlicer.getName(),
-				"action slicing unimplemented for type: " + this);
+		logger.error("{} action slicing unimplemented for type: {}", fvSlicer.getName(), this.getClass());
 		approvedActions.add(this);
 	}
 

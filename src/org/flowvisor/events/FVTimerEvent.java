@@ -72,7 +72,7 @@ public class FVTimerEvent extends FVEvent implements Comparable<FVTimerEvent> {
 	 *            the expireTime to set
 	 */
 	public void setExpireTime(long expireTime) {
-		logger.debug("expireTime is being set to: " + expireTime);
+		logger.debug("expireTime is being set to: {}" , expireTime);
 		this.expireTime = expireTime;
 	}
 

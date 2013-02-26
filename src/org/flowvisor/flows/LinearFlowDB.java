@@ -63,11 +63,10 @@ public class LinearFlowDB implements FlowDB, Serializable {
 			processFlowModDelete(flowMod, sliceName, dpid);
 			break;
 		default:
-			logger.warn(fvEventHandler.getName()+
-					"flowDB: ignore fm with unknown flow_mod command:: ",
+			logger.warn("{} flowDB: ignore fm with unknown flow_mod command:: {}", fvEventHandler.getName(),
 					flowMod.getCommand());
 		}
-		logger.debug("flowdb: ", op, ": new size ", size());
+		logger.debug("flowdb: {}: new size {} ", op, size());
 	}
 
 	private void processFlowModDeleteStrict(OFFlowMod flowMod,
@@ -77,15 +76,13 @@ public class LinearFlowDB implements FlowDB, Serializable {
 			FlowDBEntry flowDBEntry = it.next();
 			if (flowDBEntry.matches(dpid, new FVMatch(flowMod.getMatch()),
 					flowMod.getCookie(), flowMod.getPriority()).getMatchType() == MatchType.EQUAL) {
-				logger.debug(fvEventHandler.getName()+
-						"flowDB: del by strict: ", flowDBEntry);
+				logger.debug("{} flowDB: del by strict: {}", fvEventHandler.getName(), flowDBEntry);
 				it.remove();
 				found = true;
 			}
 		}
 		if (!found)
-			logger.debug(fvEventHandler.getName()+
-					"flowDB: delete strict - no match found");
+			logger.debug("{} flowDB: delete strict - no match found", fvEventHandler.getName());
 	}
 
 	/**
@@ -105,15 +102,13 @@ public class LinearFlowDB implements FlowDB, Serializable {
 			MatchType matchType = flowDBEntry.matches(dpid, new FVMatch(flowMod.getMatch()),
 					flowMod.getCookie(), flowMod.getPriority()).getMatchType();
 			if (matchType == MatchType.EQUAL || matchType == MatchType.SUPERSET) {
-				logger.debug(fvEventHandler.getName()+
-						"flowDB: del by non-strict: ", flowDBEntry);
+				logger.debug("{} flowDB: del by non-strict: {}", fvEventHandler.getName(), flowDBEntry);
 				it.remove();
 				found = true;
 			}
 		}
 		if (!found)
-			logger.debug(fvEventHandler.getName()+
-					"flowDB: delete - no match found");
+			logger.debug("{} flowDB: delete - no match found", fvEventHandler.getName());
 	}
 
 	/**
@@ -126,8 +121,7 @@ public class LinearFlowDB implements FlowDB, Serializable {
 	 */
 	private void processFlowModModify(OFFlowMod flowMod, String sliceName,
 			long dpid) {
-		logger.warn(fvEventHandler.getName()+
-				"flowdb: ignoring unimplemented flowMod.modify");
+		logger.warn("{} flowdb: ignoring unimplemented flowMod.modify", fvEventHandler.getName());
 	}
 
 	/**
@@ -142,8 +136,7 @@ public class LinearFlowDB implements FlowDB, Serializable {
 		FlowDBEntry flowDBEntry = new FlowDBEntry(dpid, new FVMatch(flowMod.getMatch()),
 				this.flowID++, flowMod.getPriority(), flowMod.getActions(),
 				sliceName, flowMod.getCookie());
-		logger.debug(this.fvEventHandler.getName()+
-				"flowDB: adding new entry:", flowDBEntry, flowMod);
+		logger.debug("{} , flowDB: {} , adding new entry: {}", this.fvEventHandler.getName(), flowDBEntry, flowMod);
 		this.db.add(flowDBEntry);
 	}
 
@@ -158,15 +151,12 @@ public class LinearFlowDB implements FlowDB, Serializable {
 					&& flowDBEntry.getDpid() == dpid) {
 				it.remove();
 				sliceName = flowDBEntry.getSliceName();
-				logger.debug(this.fvEventHandler.getName()+
-						"flowDB: removing flow '", flowDBEntry,
-						"'matching flowRemoved: ", flowRemoved);
+				logger.debug("{} flowDB: removing flow '{}' matching flowRemoved: {}", this.fvEventHandler.getName(), flowDBEntry, flowRemoved);
 				break;
 			}
 		}
 		if (sliceName == null)
-			logger.info(this.fvEventHandler.getName()+
-					"flowDB: ignoring unmatched flowRemoved: ", flowRemoved);
+			logger.info("{} flowDB: ignoring unmatched flowRemoved: {}", this.fvEventHandler.getName(), flowRemoved);
 		return sliceName;
 	}
 

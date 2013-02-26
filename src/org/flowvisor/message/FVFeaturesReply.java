@@ -24,8 +24,7 @@ public class FVFeaturesReply extends org.openflow.protocol.OFFeaturesReply
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(this, fvClassifier);
 		if (fvSlicer == null) {
-			logger.warn(fvClassifier+
-					" dropping msg with un-untranslatable xid: " + this);
+			logger.warn("{} dropping msg with un-untranslatable xid: {}",fvClassifier.getName(), this.getClass());
 			return;
 		}
 		this.prunePorts(fvSlicer); // remove ports that are not part of slice

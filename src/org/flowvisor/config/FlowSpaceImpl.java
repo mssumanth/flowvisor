@@ -263,7 +263,7 @@ public class FlowSpaceImpl implements FlowSpace {
 					if (set.next())
 						sliceid = set.getInt("id");
 					else {
-						logger.warn("Slice name " + ((SliceAction) act).getSliceName() + " does not exist... skipping.");
+						logger.warn("Slice name {}  does not exist... skipping." , ((SliceAction) act).getSliceName());
 						continue;
 					}
 					ps = conn.prepareStatement(SACTIONS);
@@ -378,7 +378,7 @@ public class FlowSpaceImpl implements FlowSpace {
 				if (set.next())
 					sliceid = set.getInt("id");
 				else {
-					logger.warn("Slice name " + ((SliceAction) act).getSliceName() + " does not exist... skipping.");
+					logger.warn("Slice name {}  does not exist... skipping." , ((SliceAction) act).getSliceName());
 					continue;
 				}
 				ps = conn.prepareStatement(SACTIONS);
@@ -411,7 +411,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			ps.setInt(1, id);
 			int affected = -1;
 			if ((affected = ps.executeUpdate()) != 1) {
-				logger.error("Failed to delete rule with id ", id, " : rows affected ", affected);
+				logger.error("Failed to delete rule with id {} : rows affected {}", id, affected);
 				throw new ConfigError("Unable to remove rule with id " + id);
 			}
 		} catch (SQLException e) {
@@ -542,7 +542,7 @@ public class FlowSpaceImpl implements FlowSpace {
 			}
 			writer.endArray();
 		} catch (SQLException e) {
-			logger.error("Failed to write flowspace config : " + e.getMessage());
+			logger.error("Failed to write flowspace config : {}" , e.getMessage());
 		} finally {
 			close(set);
 			close(ps);

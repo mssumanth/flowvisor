@@ -30,8 +30,7 @@ public class FVUnknownMessage extends OFMessage implements Classifiable,
 		// in use
 		this.unknownType = bb.get(pos + 1);
 		bb.position(pos);
-		logger.warn("read unhandled OFMessage type "
-				+ this.type);
+		logger.warn("read unhandled OFMessage type {}", this.type);
 		super.readFrom(bb);
 		int left = this.length - OFMessage.MINIMUM_LENGTH;
 		if (left > 0) {
@@ -49,14 +48,12 @@ public class FVUnknownMessage extends OFMessage implements Classifiable,
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
-		logger.warn(fvClassifier.getName(),
-				"tried to classify UNKNOWN OF message: giving up");
+		logger.warn("{} tried to classify UNKNOWN OF message: giving up", fvClassifier.getName());
 	}
 
 	@Override
 	public void sliceFromController(FVClassifier fvClassifier, FVSlicer fvSlicer) {
-		logger.warn(fvSlicer.getName(),
-				"tried to slice UNKNOWN OF message: giving up");
+		logger.warn("{} tried to slice UNKNOWN OF message: giving up", fvSlicer.getName());
 	}
 
 	@Override

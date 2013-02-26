@@ -18,7 +18,7 @@ public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 	@Override
 	public void sliceFromController(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		logger.warn(fvSlicer.getName(), "dropping unexpected msg: " + msg);
+		logger.warn( "{} dropping unexpected msg: {}", fvSlicer.getName(), msg);
 	}
 
 	/**
@@ -32,8 +32,7 @@ public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 		// TODO: serve this from cache?
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
 		if (fvSlicer == null)
-			logger.warn(fvClassifier.getName(),
-					"dropping unclassifiable msg: " + msg);
+			logger.warn("fvSlicer - dropping unclassifiable msg: {}", msg);
 		else {
 			fvSlicer.sendMsg(msg, fvClassifier);
 		}

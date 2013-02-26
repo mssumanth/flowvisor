@@ -36,8 +36,7 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 			FVSlicer fvSlicer = FVMessageUtil
 					.untranslateXid(this, fvClassifier);
 			if (fvSlicer == null)
-				logger.warn(fvClassifier.getName(),
-						"dropping unclassifiable msg: " + this);
+				logger.warn("{} dropping unclassifiable msg: {}", fvClassifier.getName(), this.getClass());
 			else
 				fvSlicer.sendMsg(this, fvClassifier);
 		}
@@ -60,13 +59,11 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 		List<OFStatistics> statList = this.getStatistics();
 		for (OFStatistics stat : statList) {
 			if (stat instanceof OFDescriptionStatistics) {
-				logger.debug(topologyConnection.getName(),
-						" got descriptions stats: " + stat);
+				logger.debug("{} got descriptions stats: {}",topologyConnection.getName(), stat);
 				topologyConnection
 						.setDescriptionStatistics((FVDescriptionStatistics) stat);
 			} else {
-				logger.debug(topologyConnection.getName(),
-						"ignoring unrequested stat: " + stat);
+				logger.debug("{} ignoring unrequested stat: {}", topologyConnection.getName(), stat);
 			}
 		}
 	}
@@ -82,7 +79,7 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 		if (count == msgLen)
 			return true;
 		else {
-			logger.warn("msg failed sanity check: " + this);
+			logger.warn("msg failed sanity check: {}", this.getClass());
 			return false;
 		}
 	}

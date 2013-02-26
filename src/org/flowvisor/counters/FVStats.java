@@ -71,7 +71,6 @@ public class FVStats {
 
 	public void incrementCounter(OFMessage ofm) {
 		String oftype = msg2str(ofm);
-		logger.debug("FVStats: Incrementing Counter for: ", oftype);
 		if (this.counters.containsKey(oftype))
 			this.counters.put(oftype, this.counters.get(oftype) + 1l);
 		else

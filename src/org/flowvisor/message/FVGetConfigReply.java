@@ -17,8 +17,7 @@ public class FVGetConfigReply extends OFGetConfigReply implements Classifiable,
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(this, fvClassifier);
 		if (fvSlicer == null) {
-			logger.warn(fvClassifier.getName()+
-					"dropping unclassifiable xid in GetConfigReply: " + this);
+			logger.warn(" {} dropping unclassifiable xid in GetConfigReply: {}" , fvClassifier.getName(),  this.getClass());
 			return;
 		}
 		this.setMissSendLength(fvSlicer.getMissSendLength());

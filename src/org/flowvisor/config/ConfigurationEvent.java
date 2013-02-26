@@ -47,8 +47,13 @@ public class ConfigurationEvent {
 			m.invoke(base, arglist);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			logger.error(e.getMessage() + " " + m + " " + base);
-		}
-		
+			logger.error("{}  {}  {}", e.getMessage() , m , base);
+		}	
 	}
+	
+	
+	
 }
+
+
+

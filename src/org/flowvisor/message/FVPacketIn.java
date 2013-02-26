@@ -56,8 +56,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 				fvClassifier.getSwitchInfo().getDatapathId(), this.getInPort(),
 				this.getPacketData());
 		if (flowEntry == null) {
-			logger.debug(fvClassifier.getName(),
-					"dropping unclassifiable msg: " + this.toVerboseString());
+			logger.debug("{} dropping unclassifiable msg: {}", fvClassifier.getName(), this.toVerboseString());
 			return;
 		}
 		
@@ -72,11 +71,8 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 				FVSlicer fvSlicer = fvClassifier.getSlicerByName(sliceAction
 						.getSliceName());
 				if (fvSlicer == null) {
-					logger.warn(fvClassifier.getName(),
-							"tried to send msg to non-existant slice: "
-									+ sliceAction.getSliceName()
-									+ " corrupted flowspace?:: "
-									+ this.toVerboseString());
+					logger.warn("{} tried to send msg to non-existant slice: {} corrupted flowspace?:: {}", 
+								fvClassifier.getName(), sliceAction.getSliceName(), this.toVerboseString());
 					continue;
 				}
 				if (fvSlicer.isConnected()) {
@@ -132,8 +128,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 		try {
 			drop_policy = FVConfig.getDropPolicy(sliceName);
 		} catch (ConfigError e) {
-			logger.error(fvClassifier.getName(), "Failed to retrieve drop policy from config."
-					+ "\nDefauting to exact drop_policy");
+			logger.error("{} Failed to retrieve drop policy from config. \nDefauting to exact drop_policy", fvClassifier.getName());
 			drop_policy = "exact";
 		}
 		if (drop_policy.equals("exact"))
@@ -142,7 +137,7 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			flowMod.setMatch(flowEntry.getRuleMatch());
 		else
 			// Should never happen
-			logger.error(fvClassifier.getName(), "Error in configuration!");
+			logger.error("{} Error in configuration!", fvClassifier.getName());
 		flowMod.setCommand(FVFlowMod.OFPFC_ADD);
 		flowMod.setActions(new LinkedList<OFAction>()); // send to zero-length
 		// list, i.e., DROP
@@ -154,9 +149,8 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 		// send removed msg (1), not the check overlap (2), or
 		// emergency flow cache (4)
 
-		logger.warn(fvClassifier.getName(), "inserting drop (hard="
-				+ hardTimeout + ",idle=" + idleTimeout + ") rule for "
-				+ flowEntry);
+		logger.warn("{} inserting drop (hard= {}, idle= {}) rule for {}", fvClassifier.getName(), 
+				hardTimeout , idleTimeout , flowEntry);
 		fvClassifier.sendMsg(flowMod, fvClassifier);
 	}
 
@@ -194,16 +188,13 @@ public class FVPacketIn extends OFPacketIn implements Classifiable, Slicable,
 			DPIDandPort dpidandport = TopologyConnection.parseLLDP(this
 					.getPacketData());
 			if (dpidandport == null) {
-				logger.debug(topologyConnection.getName(),
-								"ignoring non-lldp packetin: "
-										+ this.toVerboseString());
+				logger.debug("{} ignoring non-lldp packetin: {}", topologyConnection.getName(), this.toVerboseString());
 				return;
 			}
 			OFFeaturesReply featuresReply = topologyConnection
 					.getFeaturesReply();
 			if (featuresReply == null) {
-				logger.warn(topologyConnection.getName(),
-						"ignoring packet_in: no features_reply yet");
+				logger.warn("{} ignoring packet_in: no features_reply yet", topologyConnection.getName());
 				return;
 			}
 			LinkAdvertisement linkAdvertisement = new LinkAdvertisement(

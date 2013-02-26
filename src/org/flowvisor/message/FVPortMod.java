@@ -21,7 +21,7 @@ public class FVPortMod extends OFPortMod implements Classifiable, Slicable {
 	 */
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
-		logger.debug(fvClassifier.getName(), "recv from switch: " + this);
+		logger.debug("{} recv from switch: {}" ,fvClassifier.getName(), this.getClass());
 		for (FVSlicer fvSlicer : fvClassifier.getSlicers())
 			if (fvSlicer.portInSlice(this.portNumber))
 				fvSlicer.sendMsg(this, fvClassifier);
@@ -46,7 +46,6 @@ public class FVPortMod extends OFPortMod implements Classifiable, Slicable {
 				(this.mask & OFPhysicalPort.OFPortConfig.OFPPC_NO_FLOOD
 						.ordinal()) == 0);
 		if (oldValue != fvSlicer.getFloodPortStatus(this.portNumber))
-			logger.error(fvSlicer.getName(),
-					"FIXME: need to implement FLOODING port changes");
+			logger.error("{} FIXME: need to implement FLOODING port changes", fvSlicer.getName());
 	}
 }

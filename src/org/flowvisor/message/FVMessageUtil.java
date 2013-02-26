@@ -69,8 +69,8 @@ public class FVMessageUtil {
 			return null;
 		msg.setXid(pair.getXid());
 		String sliceName = pair.getSliceName();
-		logger.debug("FVMessageUtil: xid is- " + pair.getXid()
-				+ "sliceName is- "+ pair.getSliceName());
+		//logger.debug("FVMessageUtil: xid is- {} sliceName is-  {}" , pair.getXid(), pair.getSliceName());
+		logger.debug("FVMessageUtil: sliceName is-  {}", pair.getSliceName());
 		return fvClassifier.getSlicerByName(sliceName);
 	}
 
@@ -116,18 +116,17 @@ public class FVMessageUtil {
 	}
 
 	public static void dropUnexpectedMesg(OFMessage msg, FVEventHandler handler) {
-		logger.warn(handler.getName()+ "dropping unexpected msg: " + msg);
+		logger.warn("{} dropping unexpected msg: {}", handler.getName(), msg.getClass());
 	}
 
 	public static void untranslateXidAndSend(OFMessage msg,
 			FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
 		if (fvSlicer == null) {
-			logger.warn(fvClassifier.getName(),
-					"dropping msg with unknown xid: " + msg);
+			logger.warn("{} dropping msg with unknown xid: {}", fvClassifier.getName(), msg.getClass());
 			return;
 		}
-		logger.debug(fvSlicer.getName()+ "sending to controller: " + msg);
+		logger.debug("{} sending to controller: {}" , fvSlicer.getName(), msg.getClass());
 		fvSlicer.sendMsg(msg, fvClassifier);
 	}
 

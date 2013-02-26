@@ -103,8 +103,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 		if (FlowEntry.UNIQUE_FLOW_ID == -1) {
 			FlowEntry.UNIQUE_FLOW_ID = defragmentFlowIDS();
 			if (FlowEntry.UNIQUE_FLOW_ID < 0) {
-					logger.error("STILL unable to find a free flow ID "+
-							"- FlowSpace > 2Billion?- dying");
+					logger.error("STILL unable to find a free flow ID - FlowSpace > 2Billion?- dying");
 					throw new RuntimeException(
 							"failed to find free FlowEntry.iD "+
 							" even after defrag");
@@ -153,7 +152,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 		int neoId;
 		int increment;
 
-		logger.info("defragmenting flowentry IDs using policy " + CurrentDefragPolicy);
+		logger.info("defragmenting flowentry IDs using policy {}" , CurrentDefragPolicy);
 
 		switch(policy) {
 			case DefragAll:

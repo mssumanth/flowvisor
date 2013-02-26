@@ -85,11 +85,11 @@ public class BasicJSONRPCService {
 
 				args = parseArguments(method, jreq);
 
-				logger.debug("---------invoke:" + jreq.toString());
+				logger.debug("---------invoke: {}" , jreq.toString());
 				Object retObj = method.invoke(this, args);
 
 				JSONResponse jResp = new JSONResponse(new JSONResult(gson.toJson(retObj, method.getGenericReturnType())), id);
-				logger.debug("---------invoke ret:" + jResp.toString());
+				logger.debug("---------invoke ret: {}" , jResp.toString());
 				writeJSONObject(resp, jResp);
 			} catch (IOException e) {
 				logger.warn(e.getMessage(), e);
@@ -150,7 +150,7 @@ public class BasicJSONRPCService {
 			while ((sz = reader.read(buff)) != -1) {
 				buffer.append(buff, 0, sz);
 			}
-			logger.debug("---------JSON RPC request:" + buffer.toString());
+			logger.debug("---------JSON RPC request: {}" , buffer.toString());
 			return gson.fromJson(buffer.toString(), JSONRequest.class);
 		} finally {
 			if (reader != null)
@@ -171,7 +171,7 @@ public class BasicJSONRPCService {
 		response.setContentType("text/json; charset=utf-8");
 		String json = gson.toJson(jresp, JSONResponse.class);
 		Writer writer = response.getWriter();
-		logger.debug("---------JSON RPC response:" + json);
+		logger.debug("---------JSON RPC response: {}" , json);
 		writer.write(json);
 	}
 

@@ -57,8 +57,7 @@ public class LLDPUtil {
 
 		LLDPTrailer trailer = new LLDPTrailer(fvSlicer.getSliceName(), fvName);
 		trailer.appendTo(po);
-		logger.debug(fvSlicer.getName(), "applied lldp hack: " + po
-				+ " slice=" + fvSlicer.getSliceName());
+		logger.debug("{} applied lldp hack: {} slice= {}", fvSlicer.getName(), po, fvSlicer.getSliceName());
 		fvClassifier.sendMsg(po, fvSlicer);
 		return true;
 	}
@@ -102,8 +101,7 @@ public class LLDPUtil {
 					.getSliceName());
 			if (fvSlicer != null) {
 				if (fvSlicer.isConnected()) {
-					logger.debug(fvSlicer.getName(), "undoing lldp hack: "
-							+ pi);
+					logger.debug("{} undoing lldp hack: {}", fvSlicer.getName(), pi);
 					// TODO decide if we should call:
 					// fvSlicer.setBufferIDAllowed(pi.getBufferId());
 					// the pro is it allows controllers to do stuff their LLDPs
@@ -119,12 +117,10 @@ public class LLDPUtil {
 		 * this port
 		 */
 		if (trailer != null)
-			logger.debug(fvClassifier.getName(),
-					"broadcasting b.c failed to undo lldp hack for unknown slice '"
-							+ trailer.getSliceName() + "': " + pi);
+			logger.debug("{} broadcasting b.c failed to undo lldp hack for unknown slice '{}': {}", fvClassifier.getName(),
+					trailer.getSliceName(), pi);
 		else
-			logger.debug(fvClassifier.getName(),
-					"broadcasting b.c no lldp trailer found");
+			logger.debug("{} broadcasting b.c no lldp trailer found", fvClassifier.getName());
 		short inport = pi.getInPort();
 		pi.setXid(0xdeaddead); // mark this as broadcasted
 		

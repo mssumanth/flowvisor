@@ -73,7 +73,7 @@ public class SliceAction extends OFActionVendor implements Cloneable {
 	}
 
 	public String getSliceName() {
-		logger.debug("SliceAction: The sliceName is: " + sliceName);
+		logger.debug("SliceAction: The sliceName is: {}" , sliceName);
 		return sliceName;
 	}
 

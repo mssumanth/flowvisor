@@ -105,8 +105,7 @@ public class ConfigEntry {
 			try {
 				eh.handleEvent(new ConfigUpdateEvent(eh, fullPath));
 			} catch (UnhandledEvent e) {
-				logger.error(eh +
-						"Doesn't handle ConfigUpdateEvent but asked for them !?");
+				logger.error("{} Doesn't handle ConfigUpdateEvent but asked for them !?", eh);
 			}
 		}
 	}

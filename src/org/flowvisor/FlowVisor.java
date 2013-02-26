@@ -293,7 +293,7 @@ public class FlowVisor {
 			
 			//If only -l is specified then the default log level is set to DEBUG! 
 			if(!cmd.hasOption("d")){
-				System.out.println("Use -d along with -l to get the desired level of trace, else DEBUG traces appear on the console!");
+				System.err.println("Use -d along with -l to get the desired level of trace, else DEBUG traces appear on the console!");
 				org.apache.log4j.Logger.getRootLogger().setLevel(Level.toLevel("DEBUG", Level.INFO));
 			}
 		}		
@@ -435,22 +435,20 @@ public class FlowVisor {
 		try {
 			FVConfig.writeToFile(tmpFile);
 		} catch (FileNotFoundException e) {
-			logger.error("failed to save config: tried to write to '" + tmpFile
-					+ "' but got FileNotFoundException");
+			logger.error("failed to save config: tried to write to '{}' but got FileNotFoundException", tmpFile);
 
 			return;
 		}
 		// sometimes, Java has the stoopidest ways of doing things :-(
 		File tmp = new File(tmpFile);
 		if (tmp.length() == 0) {
-			logger.error("failed to save config: tried to write to '" + tmpFile
-					+ "' but wrote empty file");
+			logger.error("failed to save config: tried to write to '{}' but wrote empty file" , tmpFile);
 			return;
 		}
 
 		tmp.renameTo(new File(this.configFile));
-		logger.info("Saved config to disk at "
-				+ this.configFile);
+		logger.info("Saved config to disk at {} "
+				, this.configFile);
 	}
 
 	public String getInstanceName() {

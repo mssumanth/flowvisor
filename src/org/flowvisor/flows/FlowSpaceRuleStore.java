@@ -453,8 +453,8 @@ public class FlowSpaceRuleStore {
 			ret.addAll(intersections.values());
 
 		} catch (NoMatch e) {
-			logger.error("Failed to intersect flow mod "
-					+ match);
+			logger.error("Failed to intersect flow mod {}"
+					, match);
 			return new ArrayList<FlowIntersect>(ret);
 			// return new ArrayList<FlowIntersect>(intersections.values());
 		} catch (UnknownMatchField umf) {
@@ -663,8 +663,8 @@ public class FlowSpaceRuleStore {
 			}
 
 		} catch (NoMatch e) {
-			logger.warn(getRules()+ " ");
-			logger.warn("No match for: ", match);
+			logger.warn("{}",getRules());
+			logger.warn("No match for: {}", match);
 			return flowrules;
 		}
 
@@ -713,8 +713,7 @@ public class FlowSpaceRuleStore {
 	 */
 	private <K> boolean testEmpty(BitSet src, Map<K, BitSet> map, K key,
 			K anykey, int wildcards, int wild) throws NoMatch {
-		logger.debug("FlowSpaceRuleStore: testing to check " +
-				"if the bit set is empty ");
+		logger.debug("FlowSpaceRuleStore: testing to check if the bit set is empty ");
 		if ((wildcards & wild) != 0)
 			return true;
 		BitSet any = get(map, anykey);
@@ -806,7 +805,7 @@ public class FlowSpaceRuleStore {
 	 * @return the rule count
 	 */
 	public int getRuleCount() {
-		logger.debug("The number of rules in this flowspace is: " +
+		logger.debug("The number of rules in this flowspace is: {}" ,
 				ruleCount);
 		return ruleCount;
 	}

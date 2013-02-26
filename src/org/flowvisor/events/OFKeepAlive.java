@@ -85,8 +85,7 @@ public class OFKeepAlive extends FVTimerEvent {
 	 * @return
 	 */
 	public boolean isAlive() {
-		logger.debug("isAlive: lastPongTime- " + this.lastPongTime + "timeout- " + this.timeout +  
-				"currentTimeMillis- " + System.currentTimeMillis());
+		logger.debug("isAlive: lastPongTime- {} timeout- {} currentTimeMillis- {}" , this.lastPongTime , this.timeout , System.currentTimeMillis());
 		return ((this.lastPongTime + this.timeout) > System.currentTimeMillis());
 	}
 

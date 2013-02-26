@@ -34,7 +34,7 @@ public class APIUserCred {
 	}
 
 	static public String getUserName() {
-		logger.info("APIUserCred: UserName- "+APIUserCred.getThreadCred().userName);
+		logger.info("APIUserCred: UserName- {}",APIUserCred.getThreadCred().userName);
 		return APIUserCred.getThreadCred().userName;
 	}
 

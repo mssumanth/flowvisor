@@ -39,8 +39,7 @@ public class FVRpcErrorLogger extends XmlRpcErrorLogger {
 		if (cause != null)
 			throwable = cause;	// skip down to the inner exception
 		 StackTraceElement[] stackTrace= throwable.getStackTrace();
-		//logger.log(pLevel, msg + "\n The exception is = ", throwable);
-		logger.log(pLevel, msg + " exception  = " + throwable.getClass());
+		logger.log(pLevel, msg + " exception  = " + throwable);
 		for(int i=0; i< stackTrace.length; i++)
 			logger.log(pLevel, "at " + stackTrace[i]);
 

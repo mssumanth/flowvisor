@@ -19,15 +19,13 @@ public final class FVFlowStatisticsRequest extends OFFlowStatisticsRequest
 	public void sliceFromController(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
 		// TODO: rewrite/sanity check this request against the flowspace
-		logger.warn(fvSlicer.getName(),
-				"need to implement flowstats request slicing");
+		logger.warn("{} need to implement flowstats request slicing", fvSlicer.getName());
 		FVMessageUtil.translateXidAndSend(msg, fvClassifier, fvSlicer);
 	}
 
 	@Override
 	public void classifyFromSwitch(OFMessage msg, FVClassifier fvClassifier) {
-		logger.warn(fvClassifier.getName(), "dropping unexpected msg: "
-				+ msg);
+		logger.warn("{} dropping unexpected msg: {}", fvClassifier.getName(), msg);
 	}
 
 }

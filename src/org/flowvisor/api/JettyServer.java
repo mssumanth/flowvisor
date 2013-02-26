@@ -44,8 +44,8 @@ public class JettyServer implements Runnable{
 	private void init(int port){
 		//System.setProperty("org.eclipse.jetty.util.log.class", JettyLog.class.getCanonicalName());
 
-		logger.info("initializing FlowVisor UserAPI JSONRPC SSL WebServer on port "
-						+ port);
+		logger.info("initializing FlowVisor UserAPI JSONRPC SSL WebServer on port {}"
+						, port);
 		jettyServer = new Server(port);
 
 		SslSelectChannelConnector sslConnector = new SslSelectChannelConnector();

@@ -58,8 +58,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 				throw new ActionDisallowedException("in port not in slice"
 						+ in_port, OFBadActionCode.OFPBAC_EPERM);
 		} else {
-			logger.error(fvSlicer.getName(),
-					"action slicing unimplemented for type: " + this);
+			logger.error("{} action slicing unimplemented for type: {}", fvSlicer.getName(), this.getClass());
 			approvedActions.add(this);
 		}
 	}
@@ -87,10 +86,8 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 					approvedActions.add(this);
 					return;
 				} else {
-					logger.debug(fvClassifier.getName(),
-							"slice has no flood perms: "
-									+ fvSlicer.getSliceName() + "!='"
-									+ fvClassifier.getFloodPermsSlice() + "'");
+					logger.debug("{} slice has no flood perms: {} != '{}'", fvClassifier.getName(), fvSlicer.getSliceName() 
+							, fvClassifier.getFloodPermsSlice());
 				}
 			}
 		}
@@ -123,9 +120,8 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 
 	private void turnOffOutOfSliceFloodBits(FVSlicer fvSlicer,
 			FVClassifier fvClassifier) {
-		logger.error(fvClassifier.getName(),
-				"Would be turning off flooding ports for slice "
-						+ fvSlicer.getSliceName() + " but its NOT IMPLEMENTED");
+		logger.error("{} Would be turning off flooding ports for slice {} but its NOT IMPLEMENTED", fvClassifier.getName(), 
+						fvSlicer.getSliceName());
 		/**
 		 * TODO Need to send OFPortMod msgs to turn off the flood bit for all
 		 * ports NOT in this slice

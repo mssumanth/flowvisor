@@ -201,7 +201,7 @@ public class FVCtl {
 
 	private void handleFlowSpaceResults(List<FlowEntry> flows){
 		for(FlowEntry flow : flows){
-			logger.debug("handleFlowSpaceResults: " + flow.toString());
+			logger.debug("handleFlowSpaceResults: {}" , flow.toString());
 			System.out.println(flow.toString());
 		}
 	}

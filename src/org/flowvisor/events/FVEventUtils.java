@@ -20,9 +20,8 @@ public class FVEventUtils {
 			FVEventHandler handler, FVEvent e) {
 		long stopCounter = System.currentTimeMillis();
 		if ((stopCounter - startCounter) > FVConfig.DelayWarning) {
-			logger.error(e.getDst().getName()+
-					"STARVING: handling event took "
-							+ (stopCounter - startCounter) + "ms: " + e);
+			logger.error("{} STARVING: handling event took {} ms: {}", e.getDst().getName(),
+							 (stopCounter - startCounter), e);
 		}
 	}
 }

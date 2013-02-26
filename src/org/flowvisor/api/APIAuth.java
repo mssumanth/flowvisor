@@ -77,7 +77,7 @@ public class APIAuth implements AuthenticationHandler {
 			// throw new XmlRpcException(err);
 			return false;
 		}
-		logger.debug("API auth" + request + " for user '" + user + "'");
+		logger.debug("API auth {} for user '{}'" , request , user);
 		// HACK to tie this thread to the user
 		return true;
 	}
@@ -157,7 +157,7 @@ public class APIAuth implements AuthenticationHandler {
 				return true;
 			try {
 				user = FVConfig.getSliceCreator(sliceName); 
-				logger.debug("APIAuth: transitivelyCreated- The slice "+ sliceName + " was created by "+ user );
+				logger.debug("APIAuth: transitivelyCreated- The slice {} was created by {}", sliceName , user );
 			} catch (ConfigError e) {
 				// FIXME: this config format is stupid
 				e.printStackTrace();

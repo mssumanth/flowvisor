@@ -76,7 +76,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 
 	protected Collection<FlowEntry> getFlowEntries() throws ConfigError {
 		String sliceName = APIUserCred.getUserName();
-		logger.debug("API listFlowSpace() by: " + sliceName);
+		logger.debug("API listFlowSpace() by: {}" , sliceName);
 		FlowMap flowMap;
 		synchronized (FVConfig.class) {
 			if (FVConfig.isSupervisor(sliceName))
@@ -294,7 +294,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 
 	@Override
 	public Collection<Map<String, String>> getLinks() {
-		logger.debug("API getLinks() by: " + 
+		logger.debug("API getLinks() by: {}" , 
 					APIUserCred.getUserName());
 		TopologyController topologyController = TopologyController
 				.getRunningInstance();
@@ -328,7 +328,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 
 	@Override
 	public List<String> listDevices() {
-		logger.debug("API listDevices() by: " +
+		logger.debug("API listDevices() by: {}" ,
 					APIUserCred.getUserName());
 		FlowVisor fv = FlowVisor.getInstance();
 		// get list from main flowvisor instance
@@ -354,7 +354,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 					if (!dpids.contains(dpidStr))
 						dpids.add(dpidStr);
 					else
-						logger.warn("duplicate dpid detected: " + dpidStr);
+						logger.warn("duplicate dpid detected: {}" , dpidStr);
 				}
 			}
 		}
@@ -409,7 +409,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			map.put("portList", portList);
 			map.put("portNames", portNames);
 		} else {
-			logger.warn("null config for: " + dpidStr);
+			logger.warn("null config for: {}" , dpidStr);
 		}
 		map.put("remote", String.valueOf(fvClassifier.getConnectionName()));
 		return map;
@@ -420,15 +420,15 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			PermissionDeniedException, ConfigError {
 		String changerSlice = APIUserCred.getUserName();
 		if (!APIAuth.transitivelyCreated(changerSlice, sliceName)) {
-			logger.warn("API deletSlice(" + sliceName
-					+ ") failed by: " + APIUserCred.getUserName());
+			logger.warn("API deletSlice(' {} ') failed by: {}" , sliceName
+					, APIUserCred.getUserName());
 			throw new PermissionDeniedException("Slice " + changerSlice
 					+ " does not have perms to change the passwd of "
 					+ sliceName);
 		}
 		synchronized (FVConfig.class) {
-			logger.debug("API removeSlice(" + sliceName
-					+ ") by: " + APIUserCred.getUserName());
+			logger.debug("API removeSlice({}) by: {}" , sliceName
+					, APIUserCred.getUserName());
 			FlowMap flowSpace = FlowSpaceUtil.deleteFlowSpaceBySlice(sliceName);
 			try {
 				// this is also synchronized against FVConfig.class
@@ -505,7 +505,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 				map.put("creator", FVConfig.getSliceCreator(sliceName));
 				map.put("drop_policy", FVConfig.getSlicePolicy(sliceName));
 			} catch (ConfigError e) {
-				logger.error("malformed slice: " + e);
+				logger.error("malformed slice: {} " , e);
 				e.printStackTrace();
 			}
 		}
@@ -746,13 +746,13 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to change the flood perms of "
 					+ dpidStr + "  to " + floodPerm);
-		logger.debug("Setting flood perm for : ", dpidStr);
+		logger.debug("Setting flood perm for : {}", dpidStr);
 		long dpid = FlowSpaceUtil.parseDPID(dpidStr);
 		try {
 			SwitchImpl.getProxy().setFloodPerm(dpid, floodPerm);
 			return true;
 		} catch (ConfigError e) {
-			logger.error("Unable to set floodperm", e.getMessage());
+			logger.error("Unable to set floodperm {}", e.getMessage());
 		}
 		return false;
 	}
@@ -765,13 +765,13 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to obtain the flood perms of "
 					+ dpidStr);
-		logger.debug("Setting flood perm for : ", dpidStr);
+		logger.debug("Setting flood perm for : {}", dpidStr);
 		long dpid = FlowSpaceUtil.parseDPID(dpidStr);
 		try {
 			return SwitchImpl.getProxy().getFloodPerm(dpid);
 			
 		} catch (ConfigError e) {
-			logger.error("Unable to set floodperm", e.getMessage());
+			logger.error("Unable to set floodperm {}", e.getMessage());
 		}
 		return null;
 	}
@@ -784,7 +784,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to change the default flood perms to " 
 					+ floodPerm);
-		logger.debug("Setting default flood perm to " + floodPerm);
+		logger.debug("Setting default flood perm to {}" , floodPerm);
 		
 		FlowvisorImpl.getProxy().setFloodPerm(floodPerm);
 		return true;
@@ -802,7 +802,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 		try {
 			return FlowvisorImpl.getProxy().getFloodPerm();
 		} catch (ConfigError e) {
-			logger.error("Unable to get floodperm", e.getMessage());
+			logger.error("Unable to get floodperm {}", e.getMessage());
 		}
 		return null;
 	}
@@ -817,7 +817,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to enable or disable flow tracking");
 		boolean track = Boolean.parseBoolean(flowtracking);
-		logger.debug("Setting flow tracking to " + (track ? "enabled." : "disabled."));
+		logger.debug("Setting flow tracking to {}" , (track ? "enabled." : "disabled."));
 		FlowvisorImpl.getProxy().settrack_flows(track);
 		return true;
 	}
@@ -835,7 +835,7 @@ public class FVUserAPIImpl extends BasicJSONRPCService implements FVUserAPI {
 		try {
 			return FlowvisorImpl.getProxy().gettrack_flows();
 		} catch (ConfigError e) {
-			logger.error("Unable to get flow tracking status ", e.getMessage());
+			logger.error("Unable to get flow tracking status {}", e.getMessage());
 		}
 		return null;
 	}

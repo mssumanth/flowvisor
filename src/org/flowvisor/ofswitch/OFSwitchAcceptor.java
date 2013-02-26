@@ -43,13 +43,13 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		} catch (java.net.SocketException e) {
 			// try default/ipv4 if that fails
 			try {
-				logger.info(this.getName(), "failed to bind IPv6 address; trying IPv4");
+				logger.info("{} failed to bind IPv6 address; trying IPv4", this.getName());
 				ssc.socket().bind(
 						new InetSocketAddress(port),
 						backlog);
 			} catch (java.net.SocketException se) {
-				logger.info(this.getName(), "failed to bind IPv4 address; Quitting");
-				logger.info(this.getName(), "OF Control address already in use.");
+				logger.info("{} failed to bind IPv4 address; Quitting", this.getName());
+				logger.info("{} OF Control address already in use.", this.getName());
 				e.printStackTrace();
 				System.exit(1);
 			}
@@ -57,7 +57,7 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		ssc.configureBlocking(false);
 		this.listenPort = ssc.socket().getLocalPort();
 
-		logger.info(this.getName(), "Listening on port " + this.listenPort);
+		logger.info("{} Listening on port {}", this.getName(), this.listenPort);
 
 		// register this module with the polling loop
 		pollLoop.register(ssc, SelectionKey.OP_ACCEPT, this);
@@ -128,14 +128,14 @@ public class OFSwitchAcceptor implements FVEventHandler {
 				logger.error("ssc.accept() returned null !?! FIXME!");
 				return;
 			}
-			logger.info(this.getName(), "got new connection: " + sock);
+			logger.info("{} got new connection: {}", this.getName(), sock);
 			FVClassifier fvc = new FVClassifier(pollLoop, sock);
 			fvc.init();
 		} catch (IOException e) // ignore IOExceptions -- is this the right
 		// thing to do?
 		{
-			logger.error(this.getName(), "Got IOException for "
-					+ (sock != null ? sock : "unknown socket :: ") + e);
+			logger.error("{} Got IOException for {}", this.getName(),
+					 (sock != null ? sock : "unknown socket :: {}") , e);
 			throw new RuntimeException(e);
 		}
 	}

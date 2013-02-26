@@ -21,15 +21,14 @@ public class FVPortStatisticsReply extends OFPortStatisticsReply implements
 	@Override
 	public void sliceFromController(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		logger.warn(fvSlicer.getName(), "dropping unexpected msg: " + msg);
+		logger.warn("{} dropping unexpected msg: {}", fvSlicer.getName(), msg);
 	}
 
 	@Override
 	public void classifyFromSwitch(OFMessage msg, FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
 		if (fvSlicer == null) {
-			logger.warn(fvClassifier.getName(),
-					"dropping unclassifiable port stats reply: " + this);
+			logger.warn("fvSlicer - dropping unclassifiable port stats reply: {}", this.getClass());
 			return;
 		}
 		boolean changed = false;

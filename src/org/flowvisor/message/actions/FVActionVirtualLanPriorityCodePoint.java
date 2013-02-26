@@ -36,8 +36,7 @@ public class FVActionVirtualLanPriorityCodePoint extends
 				if (it.next() instanceof SliceAction) {
 					SliceAction action = (SliceAction) it.next();
 					if (action.getSliceName().equals(fvSlicer.getSliceName())) {
-						logger.debug(fvSlicer.getName(), "Approving " + this + 
-								" for " + match);
+						logger.debug("{} Approving {} for {}", fvSlicer.getName(), this.getClass(), match);
 						approvedActions.add(this);
 					}
 				}

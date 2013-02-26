@@ -162,13 +162,12 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	 * </ul>
 	 */
 	synchronized private void handleTimerEvent(FVTimerEvent e) {
-		logger.debug(this.getName(), "sending probes");
+		logger.debug("{} sending probes", this.getName());
 		// send a probe per fast port
 		for (Iterator<Short> fastIterator = this.fastPorts.iterator(); fastIterator
 				.hasNext();) {
 			Short port = fastIterator.next();
-			logger.debug(this.getName(), "sending fast probe to port "
-					+ port);
+			logger.debug("{} sending fast probe to port {}", this.getName(), port);
 			sendLLDP(this.phyMap.get(port));
 		}
 		// send a probe for the next slow port
@@ -178,8 +177,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 			if (this.slowIterator.hasNext()) {
 				short port = this.slowIterator.next();
 				sendLLDP(this.phyMap.get(port));
-				logger.debug(this.getName(), "sending slow probe to port "
-						+ port);
+				logger.debug("{} sending slow probe to port {}", this.getName(), port);
 			}
 
 		}
@@ -197,12 +195,11 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 				List<OFMessage> newMsgs = msgStream.read();
 				if (newMsgs != null) {
 					for (OFMessage m : newMsgs) {
-						logger.debug(this.getName(), "read " + m);
+						logger.debug("{} read {}", this.getName(), m);
 						if (m instanceof TopologyControllable)
 							((TopologyControllable) m).topologyController(this);
 						else
-							logger.warn(this.getName(),
-									"ignoring unhandled msg: " + m);
+							logger.warn("{} ignoring unhandled msg: {}", this.getName(), m);
 					}
 				} else {
 					throw new IOException("got EOF from other side");
@@ -213,8 +210,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 				msgStream.flush();
 		} catch (IOException e1) {
 			// connection to switch died; tear it down
-			logger.info(this.getName(),
-					"got IO exception; closing because : " + e1);
+			logger.info("{} got IO exception; closing because : {}", this.getName(), e1);
 			this.tearDown();
 			return;
 		}
@@ -273,10 +269,10 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 		try {
 			sock.close();
 			this.isShutdown = true;
-			logger.warn(this.getName(), "shutting down");
+			logger.warn("{} shutting down", this.getName());
 			this.topologyController.disconnect(this);
 		} catch (IOException e) {
-			logger.error(this.getName(), "ignoring error on shutdown: " + e);
+			logger.error("{} ignoring error on shutdown: {}",this.getName(), e);
 		}
 	}
 
@@ -349,7 +345,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	 *            the featuresReply to set
 	 */
 	public void setFeaturesReply(FVFeaturesReply featuresReply) {
-		logger.debug(this.getName(), "got featuresReply: " + featuresReply);
+		logger.debug("{} got featuresReply: {}", this.getName(), featuresReply);
 		boolean wasConnected = this.isConnected();
 		this.featuresReply = featuresReply;
 		if (isConnected() && !wasConnected)
@@ -370,8 +366,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	public void setDescriptionStatistics(
 			FVDescriptionStatistics descriptionStatistics) {
 		boolean wasConnected = this.isConnected();
-		logger.debug(this.getName(), "got descStats: "
-				+ descriptionStatistics);
+		logger.debug("{} got descStats: {}",this.getName(), descriptionStatistics);
 		this.descriptionStatistics = descriptionStatistics;
 		if (isConnected() && !wasConnected)
 			this.doJustConnected();
@@ -380,12 +375,11 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	private void doJustConnected() {
 		this.name = "topoDpid="
 				+ HexString.toHexString(this.featuresReply.getDatapathId());
-		logger.info(this.getName(), "starting topo discover: fasttimer = "
-				+ this.fastProbeRate);
+		logger.info("{} starting topo discover: fasttimer = {}", this.getName(), this.fastProbeRate);
 		// just one time; the timer event will cause them more often
 		List<OFPhysicalPort> ports = featuresReply.getPorts();
 		if (ports.size() < 1)
-			logger.warn(this.getName(), "got switch with no ports!?!");
+			logger.warn("{} got switch with no ports!?!", this.getName());
 
 		for (OFPhysicalPort port : ports)
 			this.addPort(port);
@@ -399,8 +393,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 
 	synchronized public void addPort(OFPhysicalPort port) {
 		// this function is synchronized so it shouldn't get hosed
-		logger.debug(this.getName(), "sending init probe to port "
-				+ port.getPortNumber());
+		logger.debug("{} sending init probe to port {}", this.getName(), port.getPortNumber());
 		sendLLDP(port);
 		this.slowPorts.add(Short.valueOf(port.getPortNumber()));
 		this.phyMap.put(Short.valueOf(port.getPortNumber()), port);
@@ -417,9 +410,7 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 			this.fastPorts.remove(port);
 			// no iterator to update
 		} else
-			logger.warn(this.getName(),
-					"tried to dynamically remove non-existant port: "
-							+ port.getPortNumber());
+			logger.warn("{} tried to dynamically remove non-existant port: {}", this.getName(), port.getPortNumber());
 
 	}
 
@@ -442,11 +433,11 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 		try {
 			this.msgStream.testAndWrite(packetOut);
 		} catch (BufferFull e) {
-			logger.error(this.getName(), "failed to write LLDP:", e);
+			logger.error("{} failed to write LLDP:{}",this.getName(), e);
 		} catch (MalformedOFMessage e) {
-			logger.error(this.getName(), "failed to write LLDP:", e);
+			logger.error("{} failed to write LLDP:{}", this.getName(), e);
 		} catch (IOException e) {
-			logger.error(this.getName(), "failed to write LLDP:", e);
+			logger.error("{} failed to write LLDP:{}", this.getName(), e);
 		}
 	}
 
@@ -567,52 +558,46 @@ public class TopologyConnection implements FVEventHandler, FVSendMsg {
 	synchronized void signalPortTimeout(short port) {
 		Short sPort = Short.valueOf(port);
 		if (this.fastPorts.contains(sPort)) {
-			logger.debug(this.getName(), "setting fast port to slow: ",
-							port);
+			logger.debug("{} setting fast port to slow: {}", this.getName(), port);
 			this.fastPorts.remove(sPort);
 			this.slowPorts.add(sPort);
 		} else if (!this.slowPorts.contains(sPort)) {
-			logger.warn(this.getName(),
-					"got signalPortTimeout for non-existant port: ", port);
+			logger.warn("{} got signalPortTimeout for non-existant port: {}",this.getName(), port);
 		}
 	}
 
 	public synchronized void signalFastPort(short port) {
 		Short sPort = Short.valueOf(port);
 		if (this.slowPorts.contains(sPort)) {
-			logger.debug(this.getName(), "setting slow port to fast: "
-					+ port);
+			logger.debug("{} setting slow port to fast: {}", this.getName(), port);
 			this.slowPorts.remove(sPort);
 			this.slowIterator = this.slowPorts.iterator();
 			this.fastPorts.add(sPort);
 		} else if (!this.fastPorts.contains(sPort)) {
-			logger.warn(this.getName(),
-					"got signalFastPort for non-existant port: ", port);
+			logger.warn("{} got signalFastPort for non-existant port: {}",this.getName(), port);
 		}
 	}
 
 	@Override
 	public void sendMsg(OFMessage msg, FVSendMsg from) {
 		if (this.msgStream != null) {
-			logger.debug(this.getName(), "send to controller: ", msg);
+			logger.debug("{} send to controller: {}",this.getName(), msg);
 			try {
 				this.msgStream.testAndWrite(msg);
 			} catch (BufferFull e) {
-				logger.error(this.getName(),
-						"framing bug; tearing down: got " + e);
+				logger.error("{} framing bug; tearing down: got {}",this.getName(), e);
 				// don't shut down now; we could get a ConcurrencyException
 				// just queue up a shutdown for later
 				this.pollLoop.queueEvent(new TearDownEvent(this, this));
 			} catch (MalformedOFMessage e) {
-				logger.error(this.getName(), "BUG: " + e);
+				logger.error("{} BUG: {}",this.getName(), e);
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (IOException e) {
-				logger.warn(this.getName(), " killing connection, got: ", e);
+				logger.warn("{} killing connection, got: {}",this.getName(), e);
 				this.tearDown();
 			}
 		} else {
-			logger.warn(this.getName(),
-					"dropping msg: controller not connected: " + msg);
+			logger.warn("{} dropping msg: controller not connected: {}", this.getName(), msg);
 			this.stats.increment(FVStatsType.DROP, from, msg);
 		}
 	}

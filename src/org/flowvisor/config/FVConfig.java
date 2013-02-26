@@ -251,7 +251,7 @@ public class FVConfig {
 	}
 
 	public static boolean checkSliceName(String sliceName) {
-		logger.debug("FVConfig: checkingSliceName " + sliceName);
+		logger.debug("FVConfig: checkingSliceName {}" , sliceName);
 		Slice proxy = SliceImpl.getProxy();
 		return proxy.checkSliceName(sliceName);
 	}

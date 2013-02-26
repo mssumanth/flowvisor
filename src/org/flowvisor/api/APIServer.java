@@ -82,8 +82,8 @@ public class APIServer {
 		// XMLRPC is stupid -- need to replace
 		// serverConfig.setEnabledForExtensions(true);
 		serverConfig.setContentLengthOptional(false);
-		logger.info("initializing FlowVisor UserAPI XMLRPC SSL WebServer on port "
-						+ port);
+		logger.info("initializing FlowVisor UserAPI XMLRPC SSL WebServer on port {}"
+						, port);
 		String sslKeyStore = System.getProperty("javax.net.ssl.keyStore");
 		if (sslKeyStore == null) {
 			throw new RuntimeException(

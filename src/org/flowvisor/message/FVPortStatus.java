@@ -29,26 +29,23 @@ public class FVPortStatus extends OFPortStatus implements Classifiable,
 		boolean updateSlicers = false;
 
 		if (reason == OFPortReason.OFPPR_ADD.ordinal()) {
-			logger.info(fvClassifier.getName(), "dynamically adding port "
-					+ port);
+			logger.info( "{} dynamically adding port {}", fvClassifier.getName(), port);
 			fvClassifier.addPort(this.getDesc()); // new port dynamically added
 			updateSlicers = true;
 		} else if (reason == OFPortReason.OFPPR_DELETE.ordinal()) {
-			logger.info(fvClassifier.getName(), "dynamically removing port "
-					+ port);
+			logger.info("{} dynamically removing port {}", fvClassifier.getName(), port);
 			fvClassifier.removePort(this.getDesc());
 			updateSlicers = true;
 		} else if (reason == OFPortReason.OFPPR_MODIFY.ordinal()) {
 			// replace/update the port definition
-			logger.info(fvClassifier.getName(), "modifying port " + port);
+			logger.info("{} modifying port {}", fvClassifier.getName(), port);
 			//fvClassifier.removePort(this.getDesc());
 			/*
 			 * ash: addPort actually removes the port first.
 			 */
 			fvClassifier.addPort(this.getDesc());
 		} else {
-			logger.error(fvClassifier.getName(), "unknown reason " + reason
-					+ " in port_status msg: " + this);
+			logger.error("{} unknown reason {} in port_status msg: {}", fvClassifier.getName(), reason, this.getClass());
 		}
 
 		if (updateSlicers) {

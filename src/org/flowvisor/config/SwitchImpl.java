@@ -125,7 +125,7 @@ public class SwitchImpl implements Switch {
 			if (set.next())
 				sliceid = set.getInt("id");
 			else {
-				logger.warn("Unknown slice "+ sliceName + " when pushing flow mod to db. Returning...");
+				logger.warn("Unknown slice {} when pushing flow mod to db. Returning...", sliceName );
 				return 0;
 			}
 			ps = conn.prepareStatement(GSWITCHID);

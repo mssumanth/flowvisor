@@ -18,7 +18,7 @@ public class FVQueueStatisticsReply extends OFQueueStatisticsReply implements
 	@Override
 	public void sliceFromController(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		logger.warn(fvSlicer.getName(), "dropping unexpected msg: " + msg);
+		logger.warn("{} dropping unexpected msg: {}", fvClassifier.getName(), msg);
 	}
 
 	/**

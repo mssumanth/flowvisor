@@ -22,8 +22,7 @@ public class FVActionNetworkLayerDestination extends
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
 		// TODO Auto-generated method stub
-		logger.error(fvSlicer.getName(),
-				"action slicing unimplemented for type: " + this);
+		logger.error("{} action slicing unimplemented for type: {}", fvSlicer.getName(), this.getClass());
 		approvedActions.add(this);
 	}
 

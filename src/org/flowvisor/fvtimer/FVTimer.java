@@ -36,11 +36,10 @@ public class FVTimer {
 	}
 
 	public void addTimer(FVTimerEvent e) {
-		logger.debug(e.getSrc().getName()+ "Scheduleing event "+ e.getId()
-				+ " at t=" + new Time(System.currentTimeMillis())
-				+ " to happen at " + new Time(e.getExpireTime()));
+		logger.debug("{} Scheduleing event {} at t = {} to happen at {}", e.getSrc().getName(), e.getId()
+				, new Time(System.currentTimeMillis()), new Time(e.getExpireTime()));
 		pq.add(e);
-		logger.debug("Events in timer queue: "+ pq.size());
+		logger.debug("Events in timer queue: {}", pq.size());
 	}
 
 	/*public void logEventQueue(String prefix, LogLevel level) {
@@ -61,7 +60,7 @@ public class FVTimer {
 
 		while ((e != null) && (e.getExpireTime() <= now)) {
 			pq.remove();
-			logger.debug(e.getDst().getName()+ "processing event " + e.getId()+ " scheduling err = "+ (now - e.getExpireTime()));
+			logger.debug("{} processing event {} scheduling err = {}" , e.getDst().getName(), e.getId(), (now - e.getExpireTime()));
 			long startCounter = System.currentTimeMillis();
 			e.getDst().handleEvent(e);
 			FVEventUtils.starvationTest(startCounter, e.getDst(), e);
@@ -86,7 +85,7 @@ public class FVTimer {
 		Iterator<FVTimerEvent> it = pq.iterator();
 		for (e = it.next(); it.hasNext(); e = it.next()) {
 			if (e.getID() == id) {
-				logger.debug("FVTimer: removeTimer - cancelling the timer "+ e.getID());
+				logger.debug("FVTimer: removeTimer - cancelling the timer {}", e.getID());
 				pq.remove(e);
 				return true;
 			}

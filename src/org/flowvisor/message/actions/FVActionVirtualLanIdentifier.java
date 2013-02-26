@@ -37,8 +37,7 @@ public class FVActionVirtualLanIdentifier extends OFActionVirtualLanIdentifier
 				if (act instanceof SliceAction) {
 					SliceAction action = (SliceAction) act;
 					if (action.getSliceName().equals(fvSlicer.getSliceName())) {
-						logger.debug(fvSlicer.getName(), "Approving " + this + 
-								" for " + match);
+						logger.debug("{} Approving {} for {}", fvSlicer.getName(), this.getClass(), match);
 						approvedActions.add(this);
 						return;
 					}

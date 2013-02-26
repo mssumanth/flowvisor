@@ -55,11 +55,8 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 				if (this.stats != null)
 					this.stats.increment(FVStatsType.DROP, this.sender, m);
 				this.consecutiveDropped++;
-				logger.warn(source +
-						"wanted to write " + m.getLengthU() + " bytes to "
-								+ outBuf.capacity()
-								+ " byte buffer, but only have space for "
-								+ outBuf.remaining() + " :: dropping msg " + m);
+				logger.warn("{} wanted to write {} bytes to {} byte buffer, but only have space for {} :: dropping msg {}" ,source, 
+						m.getLengthU(), outBuf.capacity(), outBuf.remaining(), m);
 				if (consecutiveDropped > DroppedMessageThreshold) {
 					throw new BufferFull("dropped more than "
 							+ DroppedMessageThreshold
@@ -67,10 +64,8 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 				}
 				return;
 			} else
-				logger.warn(source.getName()+
-						"Emergency buffer flush: was full, now ",
-						outBuf.remaining(), " of ", outBuf.capacity(),
-						" bytes free");
+				logger.warn("{} Emergency buffer flush: was full, now {} of {} bytes free.",source.getName(),outBuf.remaining(),
+						outBuf.capacity());
 		}
 
 		int start = this.outBuf.position();
@@ -82,7 +77,7 @@ public class FVMessageAsyncStream extends OFMessageAsyncStream {
 		if (len != wrote) { // was the packet correctly written
 			// no! back it out and throw an error
 			this.outBuf.position(start);
-			logger.error("dropping bad OF Message: " + m);
+			logger.error("dropping bad OF Message: {}" , m);
 			throw new MalformedOFMessage("len=" + len + ",wrote=" + wrote
 					+ " msg=" + m);
 		}

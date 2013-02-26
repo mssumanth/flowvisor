@@ -30,10 +30,10 @@ public class SSLWebServer extends WebServer {
 				throw new RuntimeException(
 						"Need to configure SSL: no ciphers found");
 			else {
-				logger.debug("SSL Supports "
-						+ ciphers.length + " Ciphers:: ");
+				logger.debug("SSL Supports {} Ciphers:: "
+						, ciphers.length);
 				for (int i = 0; i < ciphers.length; i++)
-					logger.debug("		" + ciphers[i]);
+					logger.debug("		" , ciphers[i]);
 			}
 			return sslFactory.createServerSocket(pPort, backlog, addr);
 		} catch (Exception e) {
