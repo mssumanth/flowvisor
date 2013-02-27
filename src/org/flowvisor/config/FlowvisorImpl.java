@@ -888,7 +888,7 @@ public class FlowvisorImpl implements Flowvisor {
 			ps = conn.prepareStatement(alter);
 			ps.execute();
 		} catch (SQLException e) {
-			throw new RuntimeException("Table alteration failed. Quitting. " + e.getMessage());
+			System.err.println("WARN: " + e.getMessage());
 		} finally {
 			close(ps);
 			close(conn);
@@ -920,7 +920,6 @@ public class FlowvisorImpl implements Flowvisor {
 			try {
 				set.findColumn(DB_VERSION);
 			} catch (SQLException e) {
-				System.out.println("Returning 0");
 				return 0;
 			}
 			ps = conn.prepareStatement(version);
@@ -928,7 +927,8 @@ public class FlowvisorImpl implements Flowvisor {
 			if (set.next()) { 
 				return set.getInt(DB_VERSION);
 			} else {
-				System.exit(1);
+				System.err.println("DB Empty, assuming latest DB Version"); 
+				return FlowVisor.FLOWVISOR_DB_VERSION;
 			}
 				
 		} catch (SQLException e) {

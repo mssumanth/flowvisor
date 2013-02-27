@@ -24,7 +24,6 @@ public class FVActionVirtualLanPriorityCodePoint extends
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
 		FVMatch neoMatch = new FVMatch(match);
-		//match.setDataLayerVirtualLanPriorityCodePoint(this.virtualLanPriorityCodePoint);
 		neoMatch.setDataLayerVirtualLanPriorityCodePoint(this.virtualLanPriorityCodePoint);
 		List<FlowEntry> flowEntries = fvClassifier.getSwitchFlowMap().matches(fvClassifier.getDPID(), neoMatch);
 		for (FlowEntry fe : flowEntries) {
