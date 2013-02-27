@@ -59,13 +59,17 @@ echo "Using source dir: $base"
 echo Installing FlowVisor into $root$prefix with prefix=$prefix as user/group ${fvuser}:${fvgroup}
 
 bin_SCRIPTS="\
+    fvctl-xml \
+    "
+
+bin_PYSCRIPTS="\
     fvctl \
     "
 
 sbin_SCRIPTS="\
     fvconfig \
     flowvisor \
-    derby-interact.sh
+    derby-interact
     "
 
 LIBS="\
@@ -111,6 +115,10 @@ for script in $bin_SCRIPTS $sbin_SCRIPTS envs ; do
     sed -e "s!#base=PREFIX!base=$prefix!" -e "s!#configbase=PREFIX!configbase=$prefix!"< $script.sh > $script
 done
 
+for script in $bin_PYSCRIPTS; do
+    cp $script.py $script
+done
+
 echo Creating directories
 
 for d in bin sbin libexec/flowvisor share/man/man1 share/man/man8 share/doc/flowvisor share/db/flowvisor ; do 
@@ -132,13 +140,15 @@ for d in /var/log/flowvisor ; do
     fi
 done
 
-
-
 echo "Creating /etc/flowvisor (owned by user=$fvuser  group=$fvgroup)"
 $install $verbose --owner=$fvuser --group=$fvgroup --mode=2755 -d $root/etc/flowvisor
 
+echo "Creating /etc/logrotate.d"
+$install $verbose --mode=755 -d $root/etc/logrotate.d
+
 echo Installing scripts
 $install $verbose --owner=$binuser --group=$bingroup --mode=755 $bin_SCRIPTS $root$prefix/bin
+$install $verbose --owner=$binuser --group=$bingroup --mode=755 $bin_PYSCRIPTS $root$prefix/bin
 $install $verbose --owner=$binuser --group=$bingroup --mode=755 $sbin_SCRIPTS $root$prefix/sbin
 
 echo "Installing SYSV startup script (not enabled by default)"
@@ -193,6 +203,10 @@ $install $verbose --owner=$fvuser --group=$fvgroup --mode=644 $scriptd/FlowVisor
 
 $install $verbose --owner=$fvuser --group=$fvgroup --mode=644 $scriptd/envs $root/etc/flowvisor/envs.sh
 $install $verbose --owner=$fvuser --group=$fvgroup --mode=644 $scriptd/fvlog.config $root/etc/flowvisor/fvlog.config
+
+echo Installing Logrotate config
+cd $owd
+$install $verbose --mode=644 $scriptd/logrotate $root/etc/logrotate.d/flowvisor
 
 echo Installing documentation
 cd $owd
