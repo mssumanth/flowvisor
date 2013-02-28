@@ -33,7 +33,7 @@ public class SSLWebServer extends WebServer {
 				logger.debug("SSL Supports {} Ciphers:: "
 						, ciphers.length);
 				for (int i = 0; i < ciphers.length; i++)
-					logger.debug("		" , ciphers[i]);
+					logger.debug("	{}	" , ciphers[i]);
 			}
 			return sslFactory.createServerSocket(pPort, backlog, addr);
 		} catch (Exception e) {
