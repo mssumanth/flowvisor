@@ -7,6 +7,9 @@ import java.nio.*;
 import org.openflow.protocol.action.*;
 import org.flowvisor.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author capveg
  *
@@ -19,6 +22,8 @@ public class SliceAction extends OFActionVendor implements Cloneable {
 
 	int slicePerms;
 	String sliceName;
+	
+	final static Logger logger = LoggerFactory.getLogger(SliceAction.class);
 
 	public SliceAction(String sliceName, int slicePerms) {
 		super();
@@ -68,6 +73,7 @@ public class SliceAction extends OFActionVendor implements Cloneable {
 	}
 
 	public String getSliceName() {
+		logger.debug("SliceAction: The sliceName is: {}" , sliceName);
 		return sliceName;
 	}
 

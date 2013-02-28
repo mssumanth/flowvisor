@@ -37,9 +37,11 @@ import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.FlowRewriteDB;
 import org.flowvisor.flows.FlowSpaceUtil;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.flowvisor.counters.SendRecvDropStats;
 import org.flowvisor.ofswitch.TopologyController;
 import org.flowvisor.resources.SlicerLimits;
 import org.flowvisor.slicer.FVSlicer;
@@ -58,6 +60,7 @@ import org.openflow.util.U16;
  */
 public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI {
 	
+	final static Logger logger = LoggerFactory.getLogger(FVUserAPIImpl.class);
 
 	/**
 	 * For debugging
@@ -75,7 +78,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 
 	protected Collection<FlowEntry> getFlowEntries() throws ConfigError {
 		String sliceName = APIUserCred.getUserName();
-		FVLog.log(LogLevel.DEBUG, null, "API listFlowSpace() by: " + sliceName);
+		logger.debug("API listFlowSpace() by: {}" , sliceName);
 		FlowMap flowMap;
 		synchronized (FVConfig.class) {
 			if (FVConfig.isSupervisor(sliceName))
@@ -293,8 +296,8 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 
 	@Override
 	public Collection<Map<String, String>> getLinks() {
-		FVLog.log(LogLevel.DEBUG, null,
-				"API getLinks() by: " + APIUserCred.getUserName());
+		logger.debug("API getLinks() by: {}" , 
+					APIUserCred.getUserName());
 		TopologyController topologyController = TopologyController
 				.getRunningInstance();
 		if (topologyController == null)
@@ -309,8 +312,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 	}
 
 	protected List<Map<String, String>> getFakeLinks() {
-		FVLog.log(LogLevel.ALERT, null,
-				"API: topology server not running: faking getLinks()");
+		logger.error("API: topology server not running: faking getLinks()");
 		List<String> devices = listDevices();
 		List<Map<String, String>> list = new LinkedList<Map<String, String>>();
 		for (int i = 0; i < devices.size(); i++) {
@@ -328,8 +330,8 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 
 	@Override
 	public List<String> listDevices() {
-		FVLog.log(LogLevel.DEBUG, null,
-				"API listDevices() by: " + APIUserCred.getUserName());
+		logger.debug("API listDevices() by: {}" ,
+					APIUserCred.getUserName());
 		FlowVisor fv = FlowVisor.getInstance();
 		// get list from main flowvisor instance
 		List<String> dpids = new ArrayList<String>();
@@ -354,8 +356,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 					if (!dpids.contains(dpidStr))
 						dpids.add(dpidStr);
 					else
-						FVLog.log(LogLevel.WARN, handler,
-								"duplicate dpid detected: " + dpidStr);
+						logger.warn("duplicate dpid detected: {}" , dpidStr);
 				}
 			}
 		}
@@ -410,7 +411,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			map.put("portList", portList);
 			map.put("portNames", portNames);
 		} else {
-			FVLog.log(LogLevel.WARN, null, "null config for: " + dpidStr);
+			logger.warn("null config for: {}" , dpidStr);
 		}
 		map.put("remote", String.valueOf(fvClassifier.getConnectionName()));
 		return map;
@@ -421,15 +422,15 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			PermissionDeniedException, ConfigError {
 		String changerSlice = APIUserCred.getUserName();
 		if (!APIAuth.transitivelyCreated(changerSlice, sliceName)) {
-			FVLog.log(LogLevel.WARN, null, "API deletSlice(" + sliceName
-					+ ") failed by: " + APIUserCred.getUserName());
+			logger.warn("API deletSlice(' {} ') failed by: {}" , sliceName
+					, APIUserCred.getUserName());
 			throw new PermissionDeniedException("Slice " + changerSlice
 					+ " does not have perms to change the passwd of "
 					+ sliceName);
 		}
 		synchronized (FVConfig.class) {
-			FVLog.log(LogLevel.DEBUG, null, "API removeSlice(" + sliceName
-					+ ") by: " + APIUserCred.getUserName());
+			logger.debug("API removeSlice({}) by: {}" , sliceName
+					, APIUserCred.getUserName());
 			FlowMap flowSpace = FlowSpaceUtil.deleteFlowSpaceBySlice(sliceName);
 			try {
 				// this is also synchronized against FVConfig.class
@@ -506,7 +507,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 				map.put("creator", FVConfig.getSliceCreator(sliceName));
 				map.put("drop_policy", FVConfig.getSlicePolicy(sliceName));
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.CRIT, null, "malformed slice: " + e);
+				logger.error("malformed slice: {} " , e);
 				e.printStackTrace();
 			}
 		}
@@ -775,13 +776,13 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to change the flood perms of "
 					+ dpidStr + "  to " + floodPerm);
-		FVLog.log(LogLevel.DEBUG, null, "Setting flood perm for : ", dpidStr);
+		logger.debug("Setting flood perm for : {}", dpidStr);
 		long dpid = FlowSpaceUtil.parseDPID(dpidStr);
 		try {
 			SwitchImpl.getProxy().setFloodPerm(dpid, floodPerm);
 			return true;
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to set floodperm", e.getMessage());
+			logger.error("Unable to set floodperm {}", e.getMessage());
 		}
 		return false;
 	}
@@ -794,13 +795,13 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to obtain the flood perms of "
 					+ dpidStr);
-		FVLog.log(LogLevel.DEBUG, null, "Setting flood perm for : ", dpidStr);
+		logger.debug("Setting flood perm for : {}", dpidStr);
 		long dpid = FlowSpaceUtil.parseDPID(dpidStr);
 		try {
 			return SwitchImpl.getProxy().getFloodPerm(dpid);
 			
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to set floodperm", e.getMessage());
+			logger.error("Unable to set floodperm {}", e.getMessage());
 		}
 		return null;
 	}
@@ -813,7 +814,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to change the default flood perms to " 
 					+ floodPerm);
-		FVLog.log(LogLevel.DEBUG, null, "Setting default flood perm to " + floodPerm);
+		logger.debug("Setting default flood perm to {}" , floodPerm);
 		
 		FlowvisorImpl.getProxy().setFloodPerm(floodPerm);
 		return true;
@@ -826,12 +827,12 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 		if (!FVConfig.isSupervisor(user))
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to obtain the default flood perms");
-		FVLog.log(LogLevel.DEBUG, null, "Getting default flood perm");
+		logger.debug("Getting default flood perm");
 		
 		try {
 			return FlowvisorImpl.getProxy().getFloodPerm();
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to get floodperm", e.getMessage());
+			logger.error("Unable to get floodperm {}", e.getMessage());
 		}
 		return null;
 	}
@@ -847,8 +848,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 					+ " does not have perms to set the flow mod limit for slice " + sliceName);
 		Long dp = FlowSpaceUtil.parseDPID(dpid);
 		int limit = Integer.parseInt(maxFlowMods);
-		FVLog.log(LogLevel.DEBUG, null, "Setting flowmod limit for slice " + sliceName + 
-					" for dpid " + dpid + " to " + maxFlowMods);
+		logger.debug("Setting flowmod limit for slice {} for dpid {} to {}",sliceName,dpid,maxFlowMods);
 		try {
 			if (dp == FlowEntry.ALL_DPIDS)
 				SliceImpl.getProxy().setMaxFlowMods(sliceName, limit);
@@ -876,7 +876,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			else
 				return SwitchImpl.getProxy().getMaxFlowMods(sliceName, dp);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.DEBUG, null, "Unable to get flow mod limit; " + e.getMessage());
+			logger.debug("Unable to get flow mod limit; {}", e.getMessage());
 			return null;
 		}
 	}
@@ -908,11 +908,11 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			try {
 				SwitchImpl.getProxy().setRateLimit(sliceName, classifier.getDPID(), limit);
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.DEBUG, null, "Unable to set rate limit; " + e.getMessage());
+				logger.debug("Unable to set rate limit; {}",e.getMessage());
+				
 				return false;
 			}
-			FVLog.log(LogLevel.DEBUG, null, "Setting rate limit for slice " + sliceName + 
-					 " to " + limit);
+			logger.debug("Setting rate limit for slice {} to {}" , sliceName, limit);
 		}
 		
 		return true;
@@ -929,7 +929,7 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to enable or disable flow tracking");
 		boolean track = Boolean.parseBoolean(flowtracking);
-		FVLog.log(LogLevel.DEBUG, null, "Setting flow tracking to " + (track ? "enabled." : "disabled."));
+		logger.debug("Setting flow tracking to {}" , (track ? "enabled." : "disabled."));
 		FlowvisorImpl.getProxy().settrack_flows(track);
 		return true;
 	}
@@ -943,11 +943,11 @@ public class FVUserAPIImpl /*extends BasicJSONRPCService*/ implements FVUserAPI 
 		if (!FVConfig.isSupervisor(user))
 			throw new PermissionDeniedException("User " + user
 					+ " does not have perms to obtain flow tracking status");
-		FVLog.log(LogLevel.DEBUG, null, "Getting flow tracking status");
+		logger.debug( "Getting flow tracking status");
 		try {
 			return FlowvisorImpl.getProxy().gettrack_flows();
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.ALERT, null, "Unable to get flow tracking status ", e.getMessage());
+			logger.error("Unable to get flow tracking status {}", e.getMessage());
 		}
 		return null;
 	}

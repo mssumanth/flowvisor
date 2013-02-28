@@ -1,8 +1,10 @@
 package org.flowvisor.message.statistics;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVMessageUtil;
 import org.flowvisor.message.FVStatisticsReply;
 import org.flowvisor.message.FVStatisticsRequest;
@@ -11,12 +13,10 @@ import org.openflow.protocol.statistics.OFQueueStatisticsRequest;
 
 public class FVQueueStatisticsRequest extends OFQueueStatisticsRequest
 		implements ClassifiableStatistic, SlicableStatistic, Cloneable {
-
-	
+	final static Logger logger = LoggerFactory.getLogger(FVQueueStatisticsRequest.class);
 	 @Override
      public void classifyFromSwitch(FVStatisticsReply msg, FVClassifier fvClassifier) {
-             FVLog.log(LogLevel.WARN, fvClassifier, "dropping unexpected msg: "
-                             + msg);
+             logger.warn("{} dropping unexpected msg: {}", fvClassifier.getName(), msg.getClass().getName());
      }
 
      @Override
@@ -24,6 +24,4 @@ public class FVQueueStatisticsRequest extends OFQueueStatisticsRequest
                      FVSlicer fvSlicer) {
              FVMessageUtil.translateXidAndSend(msg, fvClassifier, fvSlicer);
      }
-
-
 }

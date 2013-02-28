@@ -38,5 +38,4 @@ if [ ! -z $FV_DEBUG_PORT ] ; then
 fi
 
 echo Starting FlowVisor >&2 
-#echo Running with FV_JVM_ARGS=$FV_JVM_ARGS >&2
 exec java $FV_JVM_ARGS $fv_defines $sslopts -cp $classpath org.flowvisor.FlowVisor "$@" 

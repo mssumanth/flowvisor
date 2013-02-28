@@ -11,11 +11,14 @@ import java.nio.channels.Selector;
 import java.util.LinkedList;
 import java.util.List;
 
+
 import org.flowvisor.FlowVisor;
 import org.flowvisor.exceptions.UnhandledEvent;
 import org.flowvisor.fvtimer.FVTimer;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * @author capveg
@@ -27,6 +30,7 @@ public class FVEventLoop {
 	Selector selector;
 	FVTimer fvtimer;
 	List<FVEvent> eventQueue;
+	final static Logger logger = LoggerFactory.getLogger(FVEventLoop.class);
 
 	public FVEventLoop() throws IOException {
 		this.shouldStop = false;
@@ -50,8 +54,7 @@ public class FVEventLoop {
 				ch.register(selector, ops, handler);
 			}
 		} catch (ClosedChannelException e) {
-			FVLog.log(LogLevel.WARN, null, "Tried to register channel ", ch,
-					" but got :", e);
+			logger.warn("Tried to register channel {} but got: {}", ch, e);
 		}
 	}
 
@@ -70,6 +73,7 @@ public class FVEventLoop {
 	}
 
 	public void queueEvent(FVEvent e) {
+		logger.debug("FVEventLoop: Queing Events");
 		synchronized (eventQueue) {
 			eventQueue.add(e);
 		}
@@ -110,10 +114,12 @@ public class FVEventLoop {
 			int nEvents;
 			List<FVEvent> tmpQueue = null;
 			long startCounter;
-
+			
+			
 			// copy queued events out of the way and clear queue
 			synchronized (eventQueue) {
 				if (!eventQueue.isEmpty()) {
+					logger.debug("EventQueue is not empty!");
 					tmpQueue = eventQueue;
 					eventQueue = new LinkedList<FVEvent>();
 				}
@@ -154,15 +160,15 @@ public class FVEventLoop {
 			}
 
 			// wait until next IO event or timer event
-			FVLog.log(LogLevel.MOBUG, null, "calling select with timeout=",
-					nextTimerEvent);
+			//logger.debug("calling select with timeout=" , nextTimerEvent);
+			logger.debug("calling select with timeout = {}", nextTimerEvent);
 			nEvents = selector.select(nextTimerEvent);
 			if (nEvents > 0) {
 				for (SelectionKey sk : selector.selectedKeys()) {
 					if (sk.isValid()) { // skip any keys that have been canceled
 						handler = (FVEventHandler) sk.attachment();
-						FVLog.log(LogLevel.MOBUG, null, "sending IO Event= ",
-								sk.readyOps(), " to ", handler.getName());
+						logger.debug("sending IO Event= {} to {}",
+								sk.readyOps(), handler.getName());
 						startCounter = System.currentTimeMillis();
 						FVIOEvent ioEvent = new FVIOEvent(sk, null, handler);
 						handler.handleEvent(ioEvent);

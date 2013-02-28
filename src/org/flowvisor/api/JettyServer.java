@@ -23,8 +23,8 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class JettyServer implements Runnable{
@@ -35,19 +35,19 @@ public class JettyServer implements Runnable{
 	private Server jettyServer;
 
 	protected JSONRPCService service = new JSONRPCService();
+	
+	final static Logger logger = LoggerFactory.getLogger(JettyServer.class);
+
 
 	public JettyServer(int port){
 		init(port);
 	}
 
 	private void init(int port){
-
 		//System.setProperty("org.eclipse.jetty.util.log.class", JettyLog.class.getCanonicalName());
-		//org.eclipse.jetty.util.log.Log.setLog(new JettyLogger());
-		
-		FVLog.log(LogLevel.INFO, null,
-				"initializing FlowVisor UserAPI JSONRPC SSL WebServer on port "
-						+ port);
+
+		logger.info("initializing FlowVisor UserAPI JSONRPC SSL WebServer on port {}"
+						, port);
 		jettyServer = new Server(port);
 
 		SslSelectChannelConnector sslConnector = new SslSelectChannelConnector();
@@ -164,7 +164,7 @@ public class JettyServer implements Runnable{
 		}
 
 		if (port == -1) {
-			FVLog.log(LogLevel.INFO, null, "JSON service disabled in config (Jetty webserver port == -1)");
+			logger.info("JSON service disabled in config (Jetty webserver port == -1)");
 			return;
 		}
 

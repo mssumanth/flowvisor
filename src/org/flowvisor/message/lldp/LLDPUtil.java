@@ -7,8 +7,9 @@ import java.nio.ByteBuffer;
 
 import org.flowvisor.FlowVisor;
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVPacketIn;
 import org.flowvisor.message.FVPacketOut;
 import org.flowvisor.slicer.FVSlicer;
@@ -25,6 +26,8 @@ public class LLDPUtil {
 	final public static byte[] LLDP_MULTICAST = { 0x01, 0x23, 0x20, 0x00, 0x00,
 			0x01 };
 	final static int MIN_FV_NAME = 20;
+	
+	final static Logger logger = LoggerFactory.getLogger(LLDPUtil.class);
 
 	/**
 	 * If this msg is lldp, then 1) add a slice identifying trailer 2) send to
@@ -53,8 +56,7 @@ public class LLDPUtil {
 
 		LLDPTrailer trailer = new LLDPTrailer(fvSlicer.getSliceName(), fvName);
 		trailer.appendTo(po);
-		FVLog.log(LogLevel.DEBUG, fvSlicer, "applied lldp hack: " + po
-				+ " slice=" + fvSlicer.getSliceName());
+		logger.debug("{} applied lldp hack: {} slice= {}", fvSlicer.getName(), po, fvSlicer.getSliceName());
 		fvClassifier.sendMsg(po, fvSlicer);
 		return true;
 	}
@@ -98,8 +100,7 @@ public class LLDPUtil {
 					.getSliceName());
 			if (fvSlicer != null) {
 				if (fvSlicer.isConnected()) {
-					FVLog.log(LogLevel.DEBUG, fvSlicer, "undoing lldp hack: "
-							+ pi);
+					logger.debug("{} undoing lldp hack: {}", fvSlicer.getName(), pi);
 					// TODO decide if we should call:
 					// fvSlicer.setBufferIDAllowed(pi.getBufferId());
 					// the pro is it allows controllers to do stuff their LLDPs
@@ -115,12 +116,10 @@ public class LLDPUtil {
 		 * this port
 		 */
 		if (trailer != null)
-			FVLog.log(LogLevel.DEBUG, fvClassifier,
-					"broadcasting b.c failed to undo llpd hack for unknown slice '"
-							+ trailer.getSliceName() + "': " + pi);
+			logger.debug("{} broadcasting b.c failed to undo lldp hack for unknown slice '{}': {}", fvClassifier.getName(),
+					trailer.getSliceName(), pi);
 		else
-			FVLog.log(LogLevel.DEBUG, fvClassifier,
-					"broadcasting b.c no lldp trailer found");
+			logger.debug("{} broadcasting b.c no lldp trailer found", fvClassifier.getName());
 		short inport = pi.getInPort();
 		pi.setXid(0xdeaddead); // mark this as broadcasted
 		

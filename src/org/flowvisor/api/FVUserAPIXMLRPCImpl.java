@@ -17,12 +17,13 @@ import org.flowvisor.exceptions.PermissionDeniedException;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.FlowSpaceUtil;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FVUserAPIXMLRPCImpl extends FVUserAPIImpl implements FVUserAPIXML{
 
-	
+	final static Logger logger = LoggerFactory.getLogger(FVUserAPIXMLRPCImpl.class);
 	/**
 	 * Lists all the flowspace
 	 *
@@ -98,12 +99,11 @@ public class FVUserAPIXMLRPCImpl extends FVUserAPIImpl implements FVUserAPIXML{
 					flowSpace.addRule(flowEntry);
 
 				}
-				FVLog.log(LogLevel.INFO, null, logMsg);
+				logger.info("{}",logMsg);
 			}
 			// update the indexes at the end, not with each rule
 			
-			FVLog.log(LogLevel.INFO, null,
-					"Signalling FlowSpace Update to all event handlers");
+			logger.info("Signalling FlowSpace Update to all event handlers");
 			FlowSpaceImpl.getProxy().notifyChange(flowSpace); // signal that FS has
 			// changed
 			FlowVisor.getInstance().checkPointConfig();

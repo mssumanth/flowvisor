@@ -1,14 +1,18 @@
 package org.flowvisor.message;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortMod;
 import org.openflow.protocol.OFError.OFPortModFailedCode;
 
 public class FVPortMod extends OFPortMod implements Classifiable, Slicable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFeaturesReply.class);
 
 	/**
 	 * Send to all slices with this port
@@ -17,7 +21,7 @@ public class FVPortMod extends OFPortMod implements Classifiable, Slicable {
 	 */
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
-		FVLog.log(LogLevel.DEBUG, fvClassifier, "recv from switch: " + this);
+		logger.debug("{} recv from switch: {}" ,fvClassifier.getName(), this.getClass().getName());
 		for (FVSlicer fvSlicer : fvClassifier.getSlicers())
 			if (fvSlicer.portInSlice(this.portNumber))
 				fvSlicer.sendMsg(this, fvClassifier);
@@ -44,5 +48,6 @@ public class FVPortMod extends OFPortMod implements Classifiable, Slicable {
 //		if (oldValue != fvSlicer.getFloodPortStatus(this.portNumber))
 //			FVLog.log(LogLevel.CRIT, fvSlicer,
 //					"FIXME: need to implement FLOODING port changes");
+
 	}
 }

@@ -15,8 +15,10 @@ import java.util.UUID;
 import org.flowvisor.config.BracketParse;
 import org.flowvisor.config.Bracketable;
 import org.flowvisor.config.FVConfig;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
@@ -25,7 +27,7 @@ import org.openflow.util.HexString;
 /**
  * @author capveg Holds data
  *         "IF packets match this RULE, THEN perform list of ACTIONS on it" In
- *         addition to normal openflow flow entry symantics, this flow entry
+ *         addition to normal openflow flow entry semantics, this flow entry
  *         also matches on dpid
  */
 public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
@@ -52,6 +54,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 	// swap the policy after each defrag for version-ing
 	static DefragmentPolicy CurrentDefragPolicy = DefragmentPolicy.DefragAll;
 
+	final static Logger logger = LoggerFactory.getLogger(FlowEntry.class);
 
 	/**
 	 * IF switch is dpid and packet match's match, then perform action list
@@ -118,9 +121,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 		if (FlowEntry.UNIQUE_FLOW_ID == -1) {
 			FlowEntry.UNIQUE_FLOW_ID = defragmentFlowIDS();
 			if (FlowEntry.UNIQUE_FLOW_ID < 0) {
-					FVLog.log(LogLevel.FATAL, null,
-							"STILL unable to find a free flow ID "+
-							"- FlowSpace > 2Billion?- dying");
+					logger.error("STILL unable to find a free flow ID - FlowSpace > 2Billion?- dying");
 					throw new RuntimeException(
 							"failed to find free FlowEntry.iD "+
 							" even after defrag");
@@ -169,7 +170,7 @@ public class FlowEntry implements Comparable<FlowEntry>, Cloneable,
 		int neoId;
 		int increment;
 
-		FVLog.log(LogLevel.INFO, null, "defragmenting flowentry IDs using policy " + CurrentDefragPolicy);
+		logger.info("defragmenting flowentry IDs using policy {}" , CurrentDefragPolicy);
 
 		switch(policy) {
 			case DefragAll:

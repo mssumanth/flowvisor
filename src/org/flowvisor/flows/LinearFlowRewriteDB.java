@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.flowvisor.events.FVEventHandler;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFFlowRemoved;
@@ -22,6 +24,8 @@ import org.openflow.protocol.OFFlowRemoved;
 public class LinearFlowRewriteDB implements FlowRewriteDB {
 
 	private static final long serialVersionUID = 1L;
+	
+	final static Logger logger = LoggerFactory.getLogger(LinearFlowRewriteDB.class);
 
 	FVEventHandler fvEventHandler;
 	Map<FlowDBEntry, FlowDB> map;
@@ -67,11 +71,10 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			processFlowModsDelete(original, rewrite);
 			break;
 		default:
-			FVLog.log(LogLevel.WARN, fvEventHandler,
-					"flowDB: ignore fm with unknown flow_mod command:: ",
+			logger.warn("{} flowDB: ignore fm with unknown flow_mod command:: {}", fvEventHandler.getName() ,
 					original.getCommand());
 		}
-		FVLog.log(LogLevel.DEBUG, null, "flowrewritedb: ", op, ": new size ", size());
+		logger.debug("flowrewritedb: {}: new size {}", op, size());
 	}
 
 	private void processFlowModsDeleteStrict(OFFlowMod original,
@@ -91,8 +94,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			}
 		}
 		if (!found)
-			FVLog.log(LogLevel.DEBUG, fvEventHandler,
-					"rewriteDB: delete non-strict: no match found");
+			logger.debug("{} rewriteDB: delete non-strict: no match found", fvEventHandler.getName());
 	}
 
 	private void processFlowModsDelete(OFFlowMod original, OFFlowMod rewrite) {
@@ -103,7 +105,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			MatchType matchType = flowDBEntry.matches(dpid,
 					new FVMatch(original.getMatch()), original.getCookie(),
 					original.getPriority()).getMatchType();
-			FVLog.log(LogLevel.DEBUG, null,"flowrewritedb: " + original.getCookie() + " == " + rewrite.getCookie());
+			logger.debug("flowrewritedb: {} == {}",original.getCookie(), rewrite.getCookie());
 			if (matchType == MatchType.EQUAL || matchType == MatchType.SUPERSET) {
 				found = true;
 				FlowDB flowDB = this.map.get(flowDBEntry);
@@ -113,8 +115,7 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 			}
 		}
 		if (!found)
-			FVLog.log(LogLevel.DEBUG, fvEventHandler,
-					"rewriteDB: delete non-strict: no match found");
+			logger.debug("{} rewriteDB: delete non-strict: no match found", fvEventHandler.getName());
 	}
 
 	private void processFlowModsModify(OFFlowMod original, OFFlowMod rewrite) {
@@ -159,19 +160,15 @@ public class LinearFlowRewriteDB implements FlowRewriteDB {
 		FlowDBEntry removedEntry = new FlowDBEntry(dpid, 0, flowRemoved,
 				sliceName);
 		if (!reverseMap.containsKey(removedEntry)) {
-			FVLog.log(LogLevel.WARN, fvEventHandler,
-					"flowrewriteDB: tried to remove non-existent flow ",
-					flowRemoved);
+			logger.warn(
+					"{} flowrewriteDB: tried to remove non-existent flow {}",fvEventHandler.getName(), flowRemoved);
 			return;
 		}
 		FlowDBEntry original = reverseMap.get(removedEntry);
 		reverseMap.remove(removedEntry);
 		FlowDB flowDB = map.get(original);
 		if (flowDB == null) {
-			FVLog.log(
-					LogLevel.WARN,
-					fvEventHandler,
-					"flowrewriteDB: internal corruption; flow exists in reverse but not forward map: ",
+			logger.warn("{} flowrewriteDB: internal corruption; flow exists in reverse but not forward map: {}", fvEventHandler.getName(),
 					flowRemoved);
 			return;
 		}

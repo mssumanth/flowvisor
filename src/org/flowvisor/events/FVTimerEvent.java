@@ -3,6 +3,9 @@
  */
 package org.flowvisor.events;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Event: a timer has expired
  *
@@ -14,7 +17,7 @@ public class FVTimerEvent extends FVEvent implements Comparable<FVTimerEvent> {
 	static int ID = 0;
 	int id;
 	Object arg;
-
+	final static Logger logger = LoggerFactory.getLogger(FVTimerEvent.class);
 	/**
 	 * Send an event from src to dst at absolute time expireTime
 	 *
@@ -69,6 +72,7 @@ public class FVTimerEvent extends FVEvent implements Comparable<FVTimerEvent> {
 	 *            the expireTime to set
 	 */
 	public void setExpireTime(long expireTime) {
+		logger.debug("expireTime is being set to: {}" , expireTime);
 		this.expireTime = expireTime;
 	}
 

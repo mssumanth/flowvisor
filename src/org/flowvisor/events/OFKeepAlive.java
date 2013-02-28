@@ -4,6 +4,10 @@
 package org.flowvisor.events;
 
 import org.flowvisor.classifier.FVSendMsg;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVMessageFactory;
 import org.openflow.protocol.OFEchoRequest;
 import org.openflow.protocol.OFType;
@@ -20,7 +24,8 @@ public class OFKeepAlive extends FVTimerEvent {
 	private final FVMessageFactory offactory;
 	FVEventLoop loop;
 	private final FVSendMsg sendMsg;
-
+	final static Logger logger = LoggerFactory.getLogger(OFKeepAlive.class);
+	
 	public OFKeepAlive(FVEventHandler handler, FVSendMsg sendMsg,
 			FVEventLoop loop) {
 		super(0, handler, handler, null);
@@ -81,6 +86,7 @@ public class OFKeepAlive extends FVTimerEvent {
 	 * @return
 	 */
 	public boolean isAlive() {
+		logger.debug("isAlive: lastPongTime- {} timeout- {} currentTimeMillis- {}" , this.lastPongTime , this.timeout , System.currentTimeMillis());
 		return ((this.lastPongTime + this.timeout) > System.currentTimeMillis());
 	}
 

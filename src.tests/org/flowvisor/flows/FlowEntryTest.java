@@ -3,8 +3,7 @@ package org.flowvisor.flows;
 import junit.framework.TestCase;
 
 import org.flowvisor.config.LoadConfig;
-import org.flowvisor.log.DevNullLogger;
-import org.flowvisor.log.FVLog;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.util.U16;
@@ -19,7 +18,6 @@ public class FlowEntryTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		FVLog.setDefaultLogger(new DevNullLogger());
 		FlowEntry.UNIQUE_FLOW_ID = -1;
 		LoadConfig.defaultConfig("blah"); // setup a default config
 	}

@@ -2,19 +2,10 @@ package org.flowvisor.flows;
 
 import junit.framework.TestCase;
 
-import org.flowvisor.log.DevNullLogger;
-import org.flowvisor.log.FVLog;
 import org.flowvisor.openflow.protocol.FVMatch;
 
 
 public class FlowTestOpTest extends TestCase {
-
-	@Override
-	protected void setUp() {
-		// don't do logging in unittests
-		FVLog.setDefaultLogger(new DevNullLogger());
-	}
-
 	public void testCIDRMatch() {
 		FlowEntry flowEntry = new FlowEntry(new FVMatch()
 				.setWildcards(FVMatch.OFPFW_ALL), new SliceAction("alice",

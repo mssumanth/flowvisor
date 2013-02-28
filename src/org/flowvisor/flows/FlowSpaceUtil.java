@@ -12,13 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.flowvisor.api.JettyServer;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.FVConfig;
 import org.flowvisor.config.FlowSpaceImpl;
 import org.flowvisor.exceptions.FlowEntryNotFound;
 import org.flowvisor.exceptions.MalformedFlowChange;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
 import org.flowvisor.ofswitch.TopologyController;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFMatch;
@@ -26,11 +26,17 @@ import org.openflow.protocol.OFPort;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.util.HexString;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author capveg
  *
  */
 public class FlowSpaceUtil {
+	
+	final static Logger logger = LoggerFactory.getLogger(JettyServer.class);
+	
 	/**
 	 * Consult the FlowSpace and get a list of all slices that get connections
 	 * to this switch, as specified by it's DPID
@@ -218,7 +224,7 @@ public class FlowSpaceUtil {
 		case FEDERATED: 
 			return fm;
 		default:
-			FVLog.log(LogLevel.ALERT, null, "Unknown FlowMap type");
+			logger.error("Unknown FlowMap type");
 			throw new RuntimeException("Unknown FlowMap type; time to quit");
 		}
 	}
@@ -378,7 +384,7 @@ public class FlowSpaceUtil {
 					flowSpace.removeRule(i);
 					FlowSpaceImpl.getProxy().removeRule(i);
 				} catch (FlowEntryNotFound e) {
-					FVLog.log(LogLevel.WARN, null, "Removed flowspace has already been removed, something bad happened.");
+					logger.warn("Removed flowspace has already been removed, something bad happened.");
 				}
 		}
 		return flowSpace;
@@ -403,7 +409,7 @@ public class FlowSpaceUtil {
 			case FEDERATED:
 				return new FederatedFlowMap();
 			default:
-				FVLog.log(LogLevel.ALERT, null, "Unknown FlowMap type");
+				logger.error("Unknown FlowMap type");
 				throw new RuntimeException("Unknown FlowMap type; time to quit");	
 		}
 	}

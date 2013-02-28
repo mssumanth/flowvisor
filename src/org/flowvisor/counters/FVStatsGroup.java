@@ -1,4 +1,4 @@
-package org.flowvisor.log;
+package org.flowvisor.counters;
 
 import java.util.HashMap;
 import java.util.Map;

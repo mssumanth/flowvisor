@@ -1,5 +1,8 @@
 package org.flowvisor.api;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Thread-local list of this User's credentials
@@ -14,6 +17,8 @@ public class APIUserCred {
 	String ip;
 
 	private final static ThreadLocal<APIUserCred> threadCred = new ThreadLocal<APIUserCred>();
+	
+	final static Logger logger = LoggerFactory.getLogger(APIUserCred.class);
 
 	public APIUserCred() {
 		this.userName = "unknown";
@@ -29,6 +34,7 @@ public class APIUserCred {
 	}
 
 	static public String getUserName() {
+		logger.info("APIUserCred: UserName- {}",APIUserCred.getThreadCred().userName);
 		return APIUserCred.getThreadCred().userName;
 	}
 
@@ -42,7 +48,6 @@ public class APIUserCred {
 	}
 
 	static public APIUserCred getThreadCred() {
-
 		APIUserCred cred = threadCred.get();
 		if (cred == null) {
 			cred = new APIUserCred();

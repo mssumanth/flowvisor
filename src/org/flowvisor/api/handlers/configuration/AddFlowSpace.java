@@ -21,11 +21,12 @@ import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
+
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -33,7 +34,8 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class AddFlowSpace implements ApiHandler<List<Map<String, Object>>> {
 
-	
+	final static Logger logger = LoggerFactory.getLogger(AddFlowSpace.class);
+
 	
 	@Override
 	public JSONRPC2Response process(List<Map<String, Object>> params) {
@@ -46,8 +48,7 @@ public class AddFlowSpace implements ApiHandler<List<Map<String, Object>>> {
 	                new Callable<Object>() {
 	                    public Object call() {
 	                    	addFlowEntries(list, flowSpace);
-							FVLog.log(LogLevel.INFO, null,
-									"Signalling FlowSpace Update to all event handlers");
+							logger.info("Signalling FlowSpace Update to all event handlers");
 							FlowSpaceImpl.getProxy().notifyChange(flowSpace);
 							return null;
 	                    }
@@ -121,9 +122,9 @@ public class AddFlowSpace implements ApiHandler<List<Map<String, Object>>> {
 						flowspaceAddChangeLogMessage(fentry.getDpid(), 
 								fentry.getRuleMatch(), fentry.getPriority(),
 								fentry.getActionsList(), fentry.getName());
-				FVLog.log(LogLevel.INFO, null, logMsg);
+				logger.info("{}",logMsg);
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.WARN, null, e.getMessage());
+				logger.warn("{}",e.getMessage());
 			}
 		}	
 	}

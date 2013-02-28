@@ -23,6 +23,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
  * Central collection of all configuration and policy information, e.g., slice
  * permissions, what port to run on, etc.
@@ -48,6 +52,8 @@ public class FVConfig {
 	
 	final static public int OFP_TCP_PORT = 6633;
 	public static final long DelayWarning = 10;
+	
+	final static Logger logger = LoggerFactory.getLogger(FVConfig.class);
 
 	/**
 	 * Return the flowmap associated with this node
@@ -67,7 +73,7 @@ public class FVConfig {
 			return proxy.getFlowMap();
 		} catch (ConfigError e) {
 			e.printStackTrace();
-			throw new RuntimeException("WTF!?!  No FlowSpace defined!?!");
+			throw new RuntimeException("Exception: No FlowSpace defined!?!");
 		}
 		
 	}
@@ -98,14 +104,12 @@ public class FVConfig {
 		String json = new Scanner(file).useDelimiter("\\Z").next();
 		HashMap<String, ArrayList<HashMap<String, Object>>> config = gson.fromJson(json, new TypeToken<HashMap<String, Object>>(){}.getType());
 		
-		
-		try {
-			
+		try {	
 			if (config.containsKey(Flowvisor.FLOWVISOR))
 				FlowvisorImpl.getProxy().fromJson(config.get(Flowvisor.FLOWVISOR));
 			else
 				throw new ConfigError("Missing configuration for flowvisor base parameters");
-			
+
 			if (config.containsKey(Slice.TSLICE))
 				SliceImpl.getProxy().fromJson(config.get(Slice.TSLICE));
 			
@@ -113,15 +117,10 @@ public class FVConfig {
 				FlowSpaceImpl.getProxy().fromJson(config.get(FlowSpace.FS));
 			
 			if (config.containsKey(Switch.SWITCH))
-				SwitchImpl.getProxy().fromJson(config.get(Switch.SWITCH));
-				
-					
-			
+				SwitchImpl.getProxy().fromJson(config.get(Switch.SWITCH));					
 		} catch (IOException e) {
 			System.err.println("Error while parsing config file " + e.getMessage());
 		} 
-		
-		
 	}
 
 	
@@ -137,6 +136,7 @@ public class FVConfig {
 		FileWriter foutput = null;
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		HashMap<String, Object> output = new HashMap<String, Object>();
+
 		try {
 			FlowvisorImpl.getProxy().toJson(output);
 			SliceImpl.getProxy().toJson(output);
@@ -145,7 +145,7 @@ public class FVConfig {
 			foutput = new FileWriter(filename);
 			foutput.write(gson.toJson(output));
 		} catch (IOException e) {
-			System.err.println("Error whie writing config file " + e.getMessage());
+			System.err.println("Error while writing config file " + e.getMessage());
 		} finally {
 			try {
 				foutput.close();
@@ -232,6 +232,7 @@ public class FVConfig {
 	}
 
 	public static boolean checkSliceName(String sliceName) {
+		logger.debug("FVConfig: checkingSliceName {}" , sliceName);
 		Slice proxy = SliceImpl.getProxy();
 		return proxy.checkSliceName(sliceName);
 	}
@@ -529,7 +530,6 @@ public class FVConfig {
 		System.err.println("Generating default config in db");
 		
 		LoadConfig.defaultConfig(passwd);
-		
 		FVConfigurationController.init(new ConfDBHandler());
 		// set the listen port, if requested
 		if (args.length > 2)

@@ -6,8 +6,10 @@ import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.lldp.LLDPUtil;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
@@ -31,6 +33,8 @@ import org.openflow.util.HexString;
  */
 
 public class FVPacketOut extends OFPacketOut implements Classifiable, Slicable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVPacketOut.class);
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
@@ -42,9 +46,7 @@ public class FVPacketOut extends OFPacketOut implements Classifiable, Slicable {
 
 		// make sure that this slice can access this bufferID
 		if (! fvSlicer.isBufferIDAllowed(this.getBufferId())) {
-			FVLog.log(LogLevel.WARN, fvSlicer,
-					"EPERM buffer_id ", this.getBufferId(), " disallowed: "
-							, this.toVerboseString());
+			logger.warn("{} EPERM - this buffer_id is disallowed: {}", fvSlicer.getName(), this.toVerboseString());
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 						OFBadRequestCode.OFPBRC_BUFFER_UNKNOWN, this), fvSlicer);
 			return;
@@ -71,20 +73,15 @@ public class FVPacketOut extends OFPacketOut implements Classifiable, Slicable {
 								fvSlicer.getSliceName(), SliceAction.WRITE))
 				// TODO add buffer_id check here
 				) {
-					FVLog
-							.log(LogLevel.WARN, fvSlicer,
-									"EPERM packet not in flowspace: "
-											+ this.toVerboseString());
+					logger.warn("{} EPERM packet not in flowspace: {}", fvSlicer.getName(), this.toVerboseString());
 					fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 							OFBadActionCode.OFPBAC_EPERM, this), fvSlicer);
 					return;
 				}
 			} catch (java.nio.BufferUnderflowException e) {
 				// packet was too short to match entire header; just ignore
-				FVLog.log(LogLevel.CRIT, fvSlicer,
-						"couldn't parse short packet: "
-								+ HexString.toHexString(this.getPacketData())
-								+ " :: " + e.getStackTrace());
+				logger.error("{} couldn't parse short packet: {} :: {} ", fvSlicer.getName(), HexString.toHexString(this.getPacketData())
+						, e.getStackTrace());
 			}
 		}
 		List<OFAction> actionsList = this.getActions();
@@ -93,7 +90,7 @@ public class FVPacketOut extends OFPacketOut implements Classifiable, Slicable {
 			actionsList = FVMessageUtil.approveActions(actionsList, match,
 					fvClassifier, fvSlicer);
 		} catch (ActionDisallowedException e) {
-			FVLog.log(LogLevel.WARN, fvSlicer, "EPERM bad actions: " + this);
+			logger.warn("{} EPERM bad actions: {}", fvSlicer.getName(), this.getClass().getName());
 
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 					e.getError(), this), fvSlicer);

@@ -12,8 +12,9 @@ import java.util.LinkedList;
 import org.flowvisor.api.APIAuth;
 import org.flowvisor.exceptions.DuplicateControllerException;
 import org.flowvisor.flows.FlowMap;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SliceImpl implements Slice {
 	
@@ -65,6 +66,9 @@ public class SliceImpl implements Slice {
 
 	private ConfDBSettings settings = null;
 	
+	final static Logger logger = LoggerFactory.getLogger(SliceImpl.class);
+	
+	private SliceImpl() {}
 	
 	public static SliceImpl getInstance() {
 		if (instance == null)
@@ -83,10 +87,10 @@ public class SliceImpl implements Slice {
 			ps.setBoolean(1, lldp_spam);
 			ps.setString(2, sliceName);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "LLDP update had no effect.");
+				logger.warn("LLDP update had no effect.");
 			notify(sliceName, FLLDP, lldp_spam);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -107,10 +111,10 @@ public class SliceImpl implements Slice {
 			ps.setString(1, policy);
 			ps.setString(2, sliceName);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Drop policy update had no effect.");
+				logger.warn("Drop policy update had no effect.");
 			notify(sliceName, FDROP, policy);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -130,10 +134,10 @@ public class SliceImpl implements Slice {
 			ps.setString(1, name);
 			ps.setString(2, sliceName);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Controller host update had no effect.");
+				logger.warn("Controller host update had no effect.");
 			notify(sliceName, FHOST, name);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 			throw new ConfigError("Unable to update controller hostname for slice " + sliceName);
 		} catch (NullPointerException npe) {
 			npe.printStackTrace();
@@ -156,10 +160,10 @@ public class SliceImpl implements Slice {
 			ps.setInt(1, port);
 			ps.setString(2, sliceName);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Controller port update had no effect.");
+				logger.warn("Controller port update had no effect.");
 			notify(sliceName, FPORT, port);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 			throw new ConfigError("Unable to set the controller port for slice " + sliceName);
 		} finally {
 			close(set);
@@ -182,7 +186,7 @@ public class SliceImpl implements Slice {
 			if (ps.executeUpdate() == 0)
 				throw new ConfigError("Email for slice " + sliceName + " was not set to " + email);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -204,7 +208,7 @@ public class SliceImpl implements Slice {
 			if (ps.executeUpdate() == 0)
 				throw new ConfigError("Password for slice " + sliceName + " was not updated");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -226,7 +230,7 @@ public class SliceImpl implements Slice {
 				throw new ConfigError("Global limit for slice " + sliceName + " was not set to " + limit);
 			notify(sliceName, FFMLIMIT, limit);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -248,7 +252,7 @@ public class SliceImpl implements Slice {
 			if (set.next())
 				return set.getInt(FMLIMIT);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -271,7 +275,7 @@ public class SliceImpl implements Slice {
 			if (set.next())
 				return set.getBoolean(LLDP);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -294,7 +298,7 @@ public class SliceImpl implements Slice {
 			if (set.next())
 				return set.getString(DROP);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -319,7 +323,7 @@ public class SliceImpl implements Slice {
 			else
 				throw new ConfigError("No such slice " + sliceName);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -344,7 +348,7 @@ public class SliceImpl implements Slice {
 			else
 				throw new ConfigError("Controller port for slice " + sliceName + " not found.");
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -370,7 +374,7 @@ public class SliceImpl implements Slice {
 			else
 				throw new ConfigError("No " + elm + " found for " + sliceName);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -395,7 +399,7 @@ public class SliceImpl implements Slice {
 			else
 				throw new ConfigError("Unknown slice " + sliceName);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -420,7 +424,7 @@ public class SliceImpl implements Slice {
 			else
 				throw new ConfigError("Unknown slice " + sliceName);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -446,7 +450,7 @@ public class SliceImpl implements Slice {
 				throw new ConfigError("No slices defined");
 			return list;
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -467,7 +471,7 @@ public class SliceImpl implements Slice {
 			ps.setString(1, sliceName);
 			return ps.execute();
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -555,9 +559,9 @@ public class SliceImpl implements Slice {
 			ps.setBoolean(11, true);
 			ps.setInt(12, -1);
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Slice " + sliceName + " creation had no effect.");
+				logger.warn("Slice {} creation had no effect." , sliceName);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -601,11 +605,11 @@ public class SliceImpl implements Slice {
 			ps.setBoolean(11, lldp_spam);
 			ps.setInt(12, maxFlowMods);
 			if (ps.executeUpdate() == 0) {
-				FVLog.log(LogLevel.WARN, null, "Slice " + sliceName + " creation had no effect.");
+				logger.warn("Slice {} creation had no effect.", sliceName);
 				return;
 			}
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -636,7 +640,7 @@ public class SliceImpl implements Slice {
 			if (ps.executeUpdate() == 0)
 				throw new InvalidSliceName("Unknown slice name : " + sliceName);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -657,7 +661,7 @@ public class SliceImpl implements Slice {
 			ps.setString(2, sliceName);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -678,7 +682,7 @@ public class SliceImpl implements Slice {
 			if (set.next()) 
 				return set.getBoolean(ADMINDOWN);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -764,7 +768,7 @@ public class SliceImpl implements Slice {
 			}
 			output.put(TSLICE, list);	
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, "Failed to write slice information "  + e.getMessage());
+			logger.warn("Failed to write slice information {}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -811,12 +815,13 @@ public class SliceImpl implements Slice {
 			if (row.get(LLDP) == null)
 				row.put(LLDP, true);
 			ps.setBoolean(11, (Boolean) row.get(LLDP));
+
 			if (row.get(FMLIMIT) != null)
 				ps.setInt(12, ((Double) row.get(FMLIMIT)).intValue());
 			else
 				ps.setInt(12, -1);
 			if (ps.executeUpdate() == 0) {
-				FVLog.log(LogLevel.WARN, null, "Insertion failed... siliently.");
+				logger.warn("Insertion failed... siliently.");
 				return;
 			}
 			if (row.get(ADMINDOWN) != null)
@@ -850,7 +855,7 @@ public class SliceImpl implements Slice {
 
 	@Override
 	public void updateDB(int version) {
-		FVLog.log(LogLevel.INFO, null, "Updating Slice database table.");
+		logger.info("Updating Slice database table.");
 		if (version == 0) {
 			processAlter("ALTER TABLE Slice ADD COLUMN " + FMLIMIT + " INT NOT NULL DEFAULT -1");
 			version++;

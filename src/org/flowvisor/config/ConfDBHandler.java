@@ -11,8 +11,10 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.derby.jdbc.EmbeddedDataSource;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.flowvisor.FlowVisor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -25,6 +27,7 @@ import org.flowvisor.log.LogLevel;
  *
  */
 public class ConfDBHandler implements ConfDBSettings {
+	final static Logger logger = LoggerFactory.getLogger(FlowVisor.class);
 	
 	private String protocol = null;
 	private String dbName = null;
@@ -81,7 +84,7 @@ public class ConfDBHandler implements ConfDBSettings {
 		try {
 			gop.returnObject(conn);
 		} catch (Exception e) {
-			FVLog.log(LogLevel.CRIT, null, "Unable to return connection");
+			logger.error("Unable to return connection");
 		}
 	}
 
@@ -118,7 +121,7 @@ public class ConfDBHandler implements ConfDBSettings {
 		} catch (ClassCastException cce) {
 			//Isn't this a derby db?
 		} catch (Exception e) {
-			FVLog.log(LogLevel.WARN, null, "Error on closing connection pool to derby");
+			logger.warn("Error on closing connection pool to derby");
 		}
 	}
 

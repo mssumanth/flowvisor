@@ -7,17 +7,18 @@ import java.util.List;
 import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFQueueConfigReply;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.queue.OFPacketQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class FVQueueConfigReply extends OFQueueConfigReply implements
 		Classifiable, Slicable  {
+	final static Logger logger = LoggerFactory.getLogger(FVQueueConfigReply.class);
 
 	@Override
 	public void sliceFromController(FVClassifier fvClassifier, FVSlicer fvSlicer) {
@@ -28,17 +29,16 @@ public class FVQueueConfigReply extends OFQueueConfigReply implements
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(this, fvClassifier);
 		if (fvSlicer == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
-					"dropping unclassifiable xid in QueueConfigReply: " + this);
+			logger.warn("{} dropping unclassifiable xid in QueueConfigReply: {}", fvClassifier.getName(), this.getClass().getName());
 			return;
 		}
 		FVMatch match = new FVMatch();
 		match.setInputPort(this.port);
-		FVLog.log(LogLevel.INFO, fvSlicer, "matching FS");
+		logger.info("{} matching FS", fvSlicer.getName());
 		List<FlowEntry> entries = fvSlicer.getFlowSpace().matches(fvClassifier.getDPID(), match);
 		Iterator<FlowEntry> it = entries.iterator();
 		while (it.hasNext()) {
-			FVLog.log(LogLevel.INFO, fvSlicer, "pruning FS");
+			logger.info("{} pruning FS", fvSlicer.getName());
 			FlowEntry fe = it.next();
 			for (OFAction act : fe.getActionsList()) {
 				SliceAction sa = (SliceAction) act;
@@ -50,7 +50,7 @@ public class FVQueueConfigReply extends OFQueueConfigReply implements
 		List<Integer> queuelog = new LinkedList<Integer>();
 		Iterator<OFPacketQueue> qit = this.queues.iterator();
 		while (qit.hasNext()) {
-			FVLog.log(LogLevel.INFO, fvSlicer, "matching queue reply");
+			logger.info("{} matching queue reply", fvSlicer.getName());
 			OFPacketQueue queue = qit.next();
 			queuelog.add(queue.getQueueId());
 			for (FlowEntry fe : entries) {
@@ -60,25 +60,23 @@ public class FVQueueConfigReply extends OFQueueConfigReply implements
 				} 
 			}
 			if (!found) {
-				FVLog.log(LogLevel.INFO, fvClassifier, "Pruning queue " + queue.getQueueId() 
-						+ " because it is not in slice " + fvSlicer.getSliceName());
+				logger.info("{} Pruning queue {}  because it is not in slice {}", fvClassifier.getName(), queue.getQueueId() 
+						, fvSlicer.getSliceName());
 				qit.remove();
 				this.setLengthU(this.getLengthU() - queue.computeLength());
 			}
 			
 		}
 		if (!found) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
-					"dropping QueueConfigReply because queues " + queuelog + 
-					" are not in slice: " + fvSlicer.getSliceName() + " : " + this);
+			logger.warn("{} dropping QueueConfigReply because queues {}  are not in slice: {} : {}", fvClassifier.getName(), queuelog ,
+					fvSlicer.getSliceName(), this.getClass().getName());
 			return;
 		}
 		if (fvSlicer.portInSlice(this.port))
 			fvSlicer.sendMsg(this, fvClassifier);
 		else 
-			FVLog.log(LogLevel.WARN, fvClassifier,
-					"dropping QueueConfigReply because port is not in slice: " + 
-					fvSlicer.getSliceName() + " : " + this);
+			logger.warn("{} dropping QueueConfigReply because port is not in slice: {} : {}", fvClassifier.getName(), fvSlicer.getSliceName(), 
+					this.getClass().getName());
 	}
 
 }

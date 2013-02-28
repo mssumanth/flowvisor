@@ -5,10 +5,11 @@ import java.util.List;
 
 import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
+
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFMatch;
@@ -18,6 +19,8 @@ import org.openflow.protocol.action.OFActionTransportLayerSource;
 
 public class FVActionTransportLayerSource extends OFActionTransportLayerSource
 		implements SlicableAction {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVActionTransportLayerSource.class);
 
 	@Override
 	public void slice(List<OFAction> approvedActions, OFMatch match,
@@ -33,8 +36,7 @@ public class FVActionTransportLayerSource extends OFActionTransportLayerSource
 				if (act instanceof SliceAction) {
 					SliceAction action = (SliceAction) act;
 					if (action.getSliceName().equals(fvSlicer.getSliceName())) {
-						FVLog.log(LogLevel.DEBUG, fvSlicer, "Approving " + this + 
-								" for " + match);
+						logger.debug("{} Approving {} for {}",fvSlicer.getName(), this.getClass().getName(), match.getClass().getName());
 						approvedActions.add(this);
 						return;
 					}

@@ -3,8 +3,10 @@ package org.flowvisor.message;
 import java.util.List;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.statistics.ClassifiableStatistic;
 import org.flowvisor.message.statistics.FVDescriptionStatistics;
 import org.flowvisor.ofswitch.TopologyConnection;
@@ -16,12 +18,13 @@ import org.openflow.protocol.statistics.OFStatistics;
 
 public class FVStatisticsReply extends OFStatisticsReply implements
 		Classifiable, Slicable, TopologyControllable, SanityCheckable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVStatisticsReply.class);
 
 	@Override
-	public void classifyFromSwitch(FVClassifier fvClassifier) {	
-		
+	public void classifyFromSwitch(FVClassifier fvClassifier) {		
 		if (this.getStatistics().size() < 1) {
-			FVLog.log(LogLevel.WARN, fvClassifier, "Dropping empty stats reply: ", this);
+			logger.warn("{} dropping unclassifiable msg: {}", fvClassifier.getName(), this.getClass().getName());
 			return;
 		}
 		
@@ -49,13 +52,11 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 		List<OFStatistics> statList = this.getStatistics();
 		for (OFStatistics stat : statList) {
 			if (stat instanceof OFDescriptionStatistics) {
-				FVLog.log(LogLevel.DEBUG, topologyConnection,
-						" got descriptions stats: " + stat);
+				logger.debug("{} got descriptions stats: {}",topologyConnection.getName(), stat);
 				topologyConnection
 						.setDescriptionStatistics((FVDescriptionStatistics) stat);
 			} else {
-				FVLog.log(LogLevel.DEBUG, topologyConnection,
-						"ignoring unrequested stat: " + stat);
+				logger.debug("{} ignoring unrequested stat: {}", topologyConnection.getName(), stat);
 			}
 		}
 	}
@@ -71,7 +72,7 @@ public class FVStatisticsReply extends OFStatisticsReply implements
 		if (count == msgLen)
 			return true;
 		else {
-			FVLog.log(LogLevel.WARN, null, "msg failed sanity check: " + this);
+			logger.warn("msg failed sanity check: {}", this.getClass().getName());
 			return false;
 		}
 	}

@@ -40,6 +40,8 @@ import org.flowvisor.flows.FlowDBEntry;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client side stand alone command-line tool for invoking the FVUserAPI
@@ -54,6 +56,9 @@ public class FVCtl {
 	String URL;
 	XmlRpcClientConfigImpl config;
 	XmlRpcClient client;
+	
+	final static Logger logger = LoggerFactory.getLogger(FVCtl.class);
+	
 	static APICmd[] cmdlist = new APICmd[] {
 		new APICmd("listSlices", 0),
 		new APICmd("createSlice", 3, "<slicename> <controller_url> <email>"),
@@ -203,6 +208,7 @@ public class FVCtl {
 
 	private void handleFlowSpaceResults(List<FlowEntry> flows){
 		for(FlowEntry flow : flows){
+			logger.debug("handleFlowSpaceResults: {}" , flow.toString());
 			System.out.println(flow.toString());
 		}
 	}
@@ -273,7 +279,6 @@ public class FVCtl {
 		return trustAllCerts;
 	}
 	public void installDumbTrust() {
-
 		TrustManager[] trustAllCerts = getTrustAllManager();
 		try {
 			// Install the all-trusting trust manager

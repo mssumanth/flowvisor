@@ -2,9 +2,10 @@ package org.flowvisor.message.statistics;
 
 import java.net.InetSocketAddress;
 
+import org.flowvisor.FlowVisor;
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.message.FVMessageUtil;
 import org.flowvisor.message.FVStatisticsReply;
 import org.flowvisor.message.FVStatisticsRequest;
@@ -14,7 +15,7 @@ import org.openflow.protocol.statistics.OFDescriptionStatistics;
 public class FVDescriptionStatistics extends OFDescriptionStatistics implements
 		SlicableStatistic, ClassifiableStatistic {
 
-
+	final static Logger logger = LoggerFactory.getLogger(FlowVisor.class);
 	/**
 	 * NOTE: we no long do any DescriptionStatistics rewriting, now that 1.0
 	 * support dp_desc field.
@@ -45,7 +46,6 @@ public class FVDescriptionStatistics extends OFDescriptionStatistics implements
 	@Override
 	public void sliceFromController(FVStatisticsRequest msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		FVLog.log(LogLevel.INFO, fvSlicer, "FVDescriptions requests have no body; message is illegal. Dropping: ", this);
-		
+		logger.info("{} FVDescriptions requests have no body; message is illegal. Dropping: {}",fvSlicer.getName(), this.getClass().getName());		
 	}
 }

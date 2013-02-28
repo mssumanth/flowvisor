@@ -13,8 +13,10 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import org.flowvisor.flows.FlowSpaceUtil;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFFlowMod;
 
@@ -76,6 +78,8 @@ public class SwitchImpl implements Switch {
 	private static String DFLOWENTRY = "DELETE FROM FlowTableEntry WHERE id = ?";
 
 	private ConfDBSettings settings = null;
+	
+	final static Logger logger = LoggerFactory.getLogger(SwitchImpl.class);
 		
 	private SwitchImpl() {}
 	
@@ -100,7 +104,7 @@ public class SwitchImpl implements Switch {
 			else 
 				return "";
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -149,7 +153,7 @@ public class SwitchImpl implements Switch {
 			if (set.next())
 				return set.getInt(FMLIMIT);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -218,7 +222,7 @@ public class SwitchImpl implements Switch {
 			values.put("LIMIT", limit);
 			notify(dpid, FFMLIMIT, values);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -241,7 +245,7 @@ public class SwitchImpl implements Switch {
 			if (set.next())
 				return set.getInt(RATELIMIT);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -308,7 +312,7 @@ public class SwitchImpl implements Switch {
 			values.put("RATELIMIT", rate);
 			notify(dpid, FRATELIMIT, values);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -332,7 +336,7 @@ public class SwitchImpl implements Switch {
 			if (set.next())
 				sliceid = set.getInt("id");
 			else {
-				FVLog.log(LogLevel.WARN, null, "Unknown slice "+ sliceName + " when pushing flow mod to db. Returning...");
+				logger.warn("Unknown slice {} when pushing flow mod to db. Returning...", sliceName );
 				return 0;
 			}
 			ps = conn.prepareStatement(GSWITCHID);
@@ -431,7 +435,7 @@ public class SwitchImpl implements Switch {
 			set.next();
 			return set.getInt(1);
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -451,7 +455,7 @@ public class SwitchImpl implements Switch {
 			ps.setInt(1, id);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn(e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -530,8 +534,7 @@ public class SwitchImpl implements Switch {
 			output.put(SWITCH, list);
 			
 		} catch (SQLException e) {
-			e.printStackTrace();
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		} finally {
 			close(set);
 			close(ps);
@@ -565,7 +568,8 @@ public class SwitchImpl implements Switch {
 			ps.setString(7, (String) row.get(DPDESC));
 			ps.setInt(8, ((Double) row.get(CAPA)).intValue());
 			if (ps.executeUpdate() == 0)
-				FVLog.log(LogLevel.WARN, null, "Insertion failed... siliently.");
+				logger.warn("Insertion failed... siliently.");
+			
 			@SuppressWarnings("unchecked")
 			HashMap<String, HashMap<String, Object>> limits = (HashMap<String, HashMap<String, Object>>) row.get(LIMITS);
 			for (Entry<String, HashMap<String, Object>> entry : limits.entrySet()) {
@@ -699,7 +703,7 @@ public class SwitchImpl implements Switch {
 
 	@Override
 	public void updateDB(int version) {
-		FVLog.log(LogLevel.INFO, null, "Updating Switch database table.");
+		logger.info("Updating Switch database table.");
 		if (version == 0) {
 			processAlter("CREATE TABLE jSliceSwitchLimits ( " +
 					"id INT GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " +

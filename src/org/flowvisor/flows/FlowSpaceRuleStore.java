@@ -14,8 +14,10 @@ import java.util.TreeSet;
 import org.flowvisor.exceptions.FlowEntryNotFound;
 import org.flowvisor.exceptions.NoMatch;
 import org.flowvisor.exceptions.UnknownMatchField;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.OFMatch;
 
@@ -31,7 +33,7 @@ import org.openflow.protocol.OFMatch;
  * rule or find all matching rules quickly without having to go through all the
  * flowmap.
  * 
- * At the end of a match, this flowmap returns a a set ordered by flowentry
+ * At the end of a match, this flowmap returns a set ordered by flowentry
  * priority.
  * 
  * @author ash
@@ -40,11 +42,13 @@ import org.openflow.protocol.OFMatch;
 
 public class FlowSpaceRuleStore {
 
+	final static Logger logger = LoggerFactory.getLogger(FlowSpaceRuleStore.class);
+	
 	/**
 	 * All these match structures bitsets representing the slice id each rule
 	 * points to.
 	 * 
-	 * These bitset are then intersected and and prioritized. If the bit set
+	 * These bitset are then intersected and prioritized. If the bit set
 	 * contains any set bit after this process then we have a match.
 	 * 
 	 */
@@ -133,7 +137,7 @@ public class FlowSpaceRuleStore {
 
 	/**
 	 * Adds a rule to the flowmap. It does so by exploding the rule into its
-	 * fields and storing each field into its independant structure.
+	 * fields and storing each field into its independent structure.
 	 * 
 	 * @param rule
 	 *            - the rule which will be added to the flowmap
@@ -449,12 +453,12 @@ public class FlowSpaceRuleStore {
 			ret.addAll(intersections.values());
 
 		} catch (NoMatch e) {
-			FVLog.log(LogLevel.FATAL, null, "Failed to intersect flow mod "
-					+ match);
+			logger.error("Failed to intersect flow mod {}"
+					, match);
 			return new ArrayList<FlowIntersect>(ret);
 			// return new ArrayList<FlowIntersect>(intersections.values());
 		} catch (UnknownMatchField umf) {
-			FVLog.log(LogLevel.FATAL, null, umf.getMessage());
+			logger.error(umf.getMessage());
 		}
 
 		return new ArrayList<FlowIntersect>(ret);
@@ -501,7 +505,6 @@ public class FlowSpaceRuleStore {
 					match.getDataLayerType());
 			break;
 		case FVMatch.OFPFW_IN_PORT:
-			FVLog.log(LogLevel.DEBUG, null, "Setting input port");
 			flowIntersect.getMatch().setInputPort(
 					match.getInputPort());
 			break;
@@ -660,7 +663,8 @@ public class FlowSpaceRuleStore {
 			}
 
 		} catch (NoMatch e) {
-			FVLog.log(LogLevel.WARN, null, "No match for: ", match);
+			logger.warn("{}",getRules());
+			logger.warn("No match for: {}", match);
 			return flowrules;
 		}
 
@@ -709,6 +713,7 @@ public class FlowSpaceRuleStore {
 	 */
 	private <K> boolean testEmpty(BitSet src, Map<K, BitSet> map, K key,
 			K anykey, int wildcards, int wild) throws NoMatch {
+		logger.debug("FlowSpaceRuleStore: testing to check if the bit set is empty ");
 		if ((wildcards & wild) != 0)
 			return true;
 		BitSet any = get(map, anykey);
@@ -800,6 +805,8 @@ public class FlowSpaceRuleStore {
 	 * @return the rule count
 	 */
 	public int getRuleCount() {
+		logger.debug("The number of rules in this flowspace is: {}" ,
+				ruleCount);
 		return ruleCount;
 	}
 

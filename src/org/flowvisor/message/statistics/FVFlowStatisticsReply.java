@@ -1,9 +1,11 @@
 package org.flowvisor.message.statistics;
 
 import org.flowvisor.classifier.FVClassifier;
+
 import org.flowvisor.classifier.XidPairWithMessage;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVMessageUtil;
 import org.flowvisor.message.FVStatisticsReply;
 import org.flowvisor.message.FVStatisticsRequest;
@@ -13,6 +15,8 @@ import org.openflow.protocol.statistics.OFStatisticsType;
 
 public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 		SlicableStatistic, ClassifiableStatistic {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFlowStatisticsReply.class);
 
 	/*
 	 * Stupid hack to return the correct number of 
@@ -28,8 +32,7 @@ public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 		XidPairWithMessage pair = FVMessageUtil
 				.untranslateXidMsg(msg, fvClassifier);
 		if (pair == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
-					"dropping unclassifiable stats reply: ", this);
+			logger.warn("{} - dropping unclassifiable stats reply: {}",fvClassifier.getName(), this.getClass().getName());
 			return;
 		}
 		FVStatisticsRequest original = (FVStatisticsRequest) pair.getOFMessage();
@@ -44,8 +47,7 @@ public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 	@Override
 	public void sliceFromController(FVStatisticsRequest msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
-		FVLog.log(LogLevel.WARN, fvSlicer, "dropping unexpected msg: " + this);
-		
+		logger.warn( "{} dropping unexpected msg: {}", fvSlicer.getName(), msg);	
 	}
 	
 	public long getTransCookie() {
@@ -54,6 +56,6 @@ public class FVFlowStatisticsReply extends OFFlowStatisticsReply implements
 	
 	public void setTransCookie(long cookie) {
 		this.trans_cookie = cookie;
-	}
 
+	}
 }

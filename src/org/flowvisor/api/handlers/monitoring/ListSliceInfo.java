@@ -9,10 +9,10 @@ import org.flowvisor.config.ConfigError;
 import org.flowvisor.config.SliceImpl;
 import org.flowvisor.exceptions.DPIDNotFound;
 import org.flowvisor.exceptions.MissingRequiredField;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.flowvisor.resources.SlicerLimits;
 import org.flowvisor.resources.ratelimit.TokenBucket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -20,7 +20,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class ListSliceInfo implements ApiHandler<Map<String, Object>> {
 
-	
+	final static Logger logger = LoggerFactory.getLogger(ListSliceInfo.class);
 	
 	@Override
 	public JSONRPC2Response process(Map<String, Object> params) {
@@ -43,7 +43,7 @@ public class ListSliceInfo implements ApiHandler<Map<String, Object>> {
 					retvals.put(CURRRATE, tb.currentRate());
 				retvals.put(CURRFMUSE, sl.getSliceFMLimit(sliceName));
 			} catch (DPIDNotFound e) {
-				FVLog.log(LogLevel.WARN, null, "No switches connected; no runtime stats available");
+				logger.warn("No switches connected; no runtime stats available");
 				retvals.put(MSG, "No switches connected; no runtime stats available");
 			}
 			

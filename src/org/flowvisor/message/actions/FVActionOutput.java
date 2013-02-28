@@ -5,8 +5,10 @@ import java.util.Set;
 
 import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.OFMatch;
@@ -24,6 +26,8 @@ import org.openflow.protocol.action.OFActionOutput;
 
 public class FVActionOutput extends OFActionOutput implements SlicableAction,
 		Cloneable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVActionOutput.class);
 
 	@Override
 	public void slice(List<OFAction> approvedActions, OFMatch match,
@@ -54,8 +58,7 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 				throw new ActionDisallowedException("in port not in slice"
 						+ in_port, OFBadActionCode.OFPBAC_EPERM);
 		} else {
-			FVLog.log(LogLevel.CRIT, fvSlicer,
-					"action slicing unimplemented for type: " + this);
+			logger.error("{} action slicing unimplemented for type: {}", fvSlicer.getName(), this.getClass().getName());
 			approvedActions.add(this);
 		}
 	}
@@ -83,10 +86,8 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 					approvedActions.add(this);
 					return;
 				} else {
-					FVLog.log(LogLevel.DEBUG, fvClassifier,
-							"slice has no flood perms: "
-									+ fvSlicer.getSliceName() + "!='"
-									+ fvClassifier.getFloodPermsSlice() + "'");
+					logger.debug("{} slice has no flood perms: {} != '{}'", fvClassifier.getName(), fvSlicer.getSliceName() 
+							, fvClassifier.getFloodPermsSlice());
 				}
 			}
 		}
@@ -121,9 +122,8 @@ public class FVActionOutput extends OFActionOutput implements SlicableAction,
 
 	private void turnOffOutOfSliceFloodBits(FVSlicer fvSlicer,
 			FVClassifier fvClassifier) {
-		FVLog.log(LogLevel.ALERT, fvClassifier,
-				"Would be turning off flooding ports for slice "
-						+ fvSlicer.getSliceName() + " but its NOT IMPLEMENTED");
+		logger.error("{} Would be turning off flooding ports for slice {} but its NOT IMPLEMENTED", fvClassifier.getName(), 
+						fvSlicer.getSliceName());
 		/**
 		 * TODO Need to send OFPortMod msgs to turn off the flood bit for all
 		 * ports NOT in this slice

@@ -1,9 +1,12 @@
 package org.flowvisor.message.statistics;
 
 import java.util.Iterator;
+
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.FVMessageUtil;
 import org.flowvisor.message.FVStatisticsReply;
 import org.flowvisor.message.FVStatisticsRequest;
@@ -13,16 +16,13 @@ import org.openflow.protocol.statistics.OFStatistics;
 
 public class FVPortStatisticsReply extends OFPortStatisticsReply implements
 		SlicableStatistic, ClassifiableStatistic {
-
-
-
+	final static Logger logger = LoggerFactory.getLogger(FVPortStatisticsReply.class);
 	@Override
 	public void classifyFromSwitch(FVStatisticsReply msg,
 			FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
         if (fvSlicer == null) {
-                FVLog.log(LogLevel.WARN, fvClassifier,
-                                "dropping unclassifiable port stats reply: " + this);
+                logger.warn("{} - dropping unclassifiable port stats reply: {}", fvClassifier.getName(), this.getClass().getName());
                 return;
         }
         for (Iterator<OFStatistics> it = msg.getStatistics().iterator(); it
@@ -31,15 +31,15 @@ public class FVPortStatisticsReply extends OFPortStatisticsReply implements
                 if (stat instanceof OFPortStatisticsReply) {
                         OFPortStatisticsReply portStat = (OFPortStatisticsReply) stat;
                         if (!fvSlicer.portInSlice(portStat.getPortNumber())) {
-                        		FVLog.log(LogLevel.DEBUG, fvClassifier, "Dropping port ", portStat.getPortNumber(), 
-                        				" because it is not in slice ", fvSlicer.getSliceName());
+                        		logger.debug("{} Dropping port {} because it is not in slice {}", fvClassifier.getName(), portStat.getPortNumber(), 
+                        				fvSlicer.getSliceName());
                                 it.remove();
                                 msg.setLengthU(msg.getLengthU() - portStat.computeLength());
                         }
                 }
         }
         if (msg.getStatistics().size() == 0) {
-        	FVLog.log(LogLevel.DEBUG, fvClassifier, "Dropping emptied port stats reply");
+        	logger.debug("{} Dropping emptied port stats reply", fvClassifier.getName());
         	return;
         }
         	
@@ -51,7 +51,6 @@ public class FVPortStatisticsReply extends OFPortStatisticsReply implements
 	@Override
 	public void sliceFromController(FVStatisticsRequest msg,
 			FVClassifier fvClassifier, FVSlicer fvSlicer) {
-		FVLog.log(LogLevel.WARN, fvSlicer, "dropping unexpected msg: " + this);
-		
+		logger.warn("{} dropping unexpected msg: {}", fvSlicer.getName(), this.getClass().getName());
 	}
 }

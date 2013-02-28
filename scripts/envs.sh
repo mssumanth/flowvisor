@@ -54,9 +54,11 @@ $jars/derby.jar:\
 $jars/derbytools.jar:\
 $jars/jna.jar:\
 $jars/syslog4j-0.9.46-bin.jar:\
-$jars/log4j-1.2.16.jar:\
 $jars/jsonrpc2-base-1.30.jar:\
 $jars/jsonrpc2-server-1.8.jar:\
+$jars/slf4j-api-1.7.2.jar:\
+$jars/log4j-1.2.17.jar:\
+$jars/slf4j-log4j12-1.7.2.jar:\
 $install_dir/flowvisor.jar
 
 emmajar=$jars/emma/emma.jar

@@ -6,7 +6,7 @@ import org.flowvisor.api.handlers.ApiHandler;
 import org.flowvisor.api.handlers.HandlerUtils;
 import org.flowvisor.config.ConfigError;
 import org.flowvisor.exceptions.MissingRequiredField;
-import org.flowvisor.log.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats;
 import org.flowvisor.slicer.FVSlicer;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;

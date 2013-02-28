@@ -10,8 +10,10 @@ import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFFlowRemoved;
@@ -20,7 +22,9 @@ import org.openflow.protocol.action.OFAction;
 
 public class FVFlowRemoved extends OFFlowRemoved implements Classifiable,
 		Slicable {
-
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFlowRemoved.class);
+	
 	/**
 	 * Current algorithm: if flow tracking knows who sent this flow, then just
 	 * send to them
@@ -66,13 +70,11 @@ public class FVFlowRemoved extends OFFlowRemoved implements Classifiable,
 			}
 		}
 		// forward this msg to each of them
-		FVLog.log(LogLevel.DEBUG, fvClassifier, slicesToUpdate.toString());
+		logger.debug("{} {}",fvClassifier.getName(), slicesToUpdate.toString());
 		for (String slice : slicesToUpdate) {
 			FVSlicer fvSlicer = fvClassifier.getSlicerByName(slice);
 			if (fvSlicer == null) {
-				FVLog.log(LogLevel.CRIT, fvClassifier,
-						"inconsistent state: missing fvSliver entry for: "
-								+ slice);
+				logger.error("{} inconsistent state: missing fvSliver entry for: {}", fvClassifier.getName(), slice);
 				continue;
 			}
 			fvSlicer.decrementFlowRules();

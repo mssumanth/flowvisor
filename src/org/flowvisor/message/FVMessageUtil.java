@@ -14,8 +14,10 @@ import org.flowvisor.classifier.XidTranslator;
 import org.flowvisor.classifier.XidTranslatorWithMessage;
 import org.flowvisor.events.FVEventHandler;
 import org.flowvisor.exceptions.ActionDisallowedException;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.actions.SlicableAction;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFError;
@@ -35,6 +37,8 @@ import org.openflow.protocol.action.OFAction;
  */
 public class FVMessageUtil {
 
+	final static Logger logger = LoggerFactory.getLogger(FVMessageUtil.class);
+	
 	/**
 	 * Translate the XID of a message from controller-unique to switch unique
 	 * Also, record the <oldXid,FVSlicer> mapping so we can reverse this later
@@ -45,6 +49,7 @@ public class FVMessageUtil {
 	 */
 	static public void translateXid(OFMessage msg, FVClassifier fvClassifier,
 			FVSlicer fvSlicer) {
+		logger.debug("FVMessageUtil: translatingXid from controller-unique to switch-unique");
 		XidTranslator xidTranslator = fvClassifier.getXidTranslator();
 		int newXid = xidTranslator.translate(msg.getXid(), fvSlicer);
 		msg.setXid(newXid);
@@ -75,6 +80,8 @@ public class FVMessageUtil {
 			return null;
 		msg.setXid(pair.getXid());
 		String sliceName = pair.getSliceName();
+		//logger.debug("FVMessageUtil: xid is- {} sliceName is-  {}" , pair.getXid(), pair.getSliceName());
+		logger.debug("FVMessageUtil: sliceName is-  {}", pair.getSliceName());
 		return fvClassifier.getSlicerByName(sliceName);
 	}
 	 
@@ -140,18 +147,17 @@ public class FVMessageUtil {
 
 
 	public static void dropUnexpectedMesg(OFMessage msg, FVEventHandler handler) {
-		FVLog.log(LogLevel.WARN, handler, "dropping unexpected msg: " + msg);
+		logger.warn("{} dropping unexpected msg: {}", handler.getName(), msg.getClass().getName());
 	}
 
 	public static void untranslateXidAndSend(OFMessage msg,
 			FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(msg, fvClassifier);
 		if (fvSlicer == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
-					"dropping msg with unknown xid: " + msg);
+			logger.warn("{} dropping msg with unknown xid: {}", fvClassifier.getName(), msg.getClass().getName());
 			return;
 		}
-		FVLog.log(LogLevel.DEBUG, fvSlicer, "sending to controller: " + msg);
+		logger.debug("{} sending to controller: {}" , fvSlicer.getName(), msg.getClass().getName());
 		fvSlicer.sendMsg(msg, fvClassifier);
 	}
 

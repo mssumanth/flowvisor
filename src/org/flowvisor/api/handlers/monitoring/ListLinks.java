@@ -10,8 +10,8 @@ import org.flowvisor.api.APIUserCred;
 import org.flowvisor.api.LinkAdvertisement;
 import org.flowvisor.api.handlers.ApiHandler;
 import org.flowvisor.api.handlers.HandlerUtils;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.ofswitch.TopologyController;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -19,7 +19,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class ListLinks implements ApiHandler<Object> {
 
-	
+	final static Logger logger = LoggerFactory.getLogger(ListLinks.class);
 	
 	@Override
 	public JSONRPC2Response process(Object params) {
@@ -32,8 +32,7 @@ public class ListLinks implements ApiHandler<Object> {
 	}
 	
 	public Collection<Map<String, String>> getLinks() {
-		FVLog.log(LogLevel.DEBUG, null,
-				"API getLinks() by: " + APIUserCred.getUserName());
+		logger.debug("API getLinks() by: {}", APIUserCred.getUserName());
 		TopologyController topologyController = TopologyController
 				.getRunningInstance();
 		if (topologyController == null)
@@ -48,8 +47,7 @@ public class ListLinks implements ApiHandler<Object> {
 	}
 	
 	protected List<Map<String, String>> getFakeLinks() {
-		FVLog.log(LogLevel.ALERT, null,
-				"API: topology server not running: faking getLinks()");
+		logger.warn("API: topology server not running: faking getLinks()");
 		List<String> devices = HandlerUtils.getAllDevices();
 		List<Map<String, String>> list = new LinkedList<Map<String, String>>();
 		for (int i = 0; i < devices.size(); i++) {

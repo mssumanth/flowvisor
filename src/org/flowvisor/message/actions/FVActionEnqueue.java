@@ -4,9 +4,13 @@ import java.util.List;
 
 import org.flowvisor.classifier.FVClassifier;
 import org.flowvisor.exceptions.ActionDisallowedException;
+
 import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.SliceAction;
 import org.flowvisor.openflow.protocol.FVMatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFError.OFBadActionCode;
@@ -14,12 +18,11 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionEnqueue;
 
 public class FVActionEnqueue extends OFActionEnqueue implements SlicableAction {
-
+	final static Logger logger = LoggerFactory.getLogger(FVActionEnqueue.class);
 	@Override
 	public void slice(List<OFAction> approvedActions, OFMatch match,
 			FVClassifier fvClassifier, FVSlicer fvSlicer)
 			throws ActionDisallowedException {
-		
 		/*
 		 * Match OFMatch, if flowentry has queue id then OK. 
 		 */
@@ -40,7 +43,6 @@ public class FVActionEnqueue extends OFActionEnqueue implements SlicableAction {
 				fvSlicer.getSliceName() + " may not enqueue to queue " + this.queueId
 				+ " for port " + this.port,
 				OFBadActionCode.OFPBAC_BAD_QUEUE);
-		
 	}
 
 }

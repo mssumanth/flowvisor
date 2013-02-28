@@ -2,13 +2,14 @@ package org.flowvisor.config;
 
 import java.lang.reflect.Method;
 
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigurationEvent {
 	private String toCall = null;
 	private Object newValue = null;
 	private ChangedListener base = null;
+	final static Logger logger = LoggerFactory.getLogger(ConfigurationEvent.class);
 
 	/**
 	 * Constructs a new configuration event. 
@@ -46,8 +47,13 @@ public class ConfigurationEvent {
 			m.invoke(base, arglist);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			FVLog.log(LogLevel.CRIT, null, e.getMessage() + " " + m + " " + base);
-		}
-		
+			logger.error("{}  {}  {}", e.getMessage() , m , base);
+		}	
 	}
+	
+	
+	
 }
+
+
+

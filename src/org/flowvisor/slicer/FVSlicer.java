@@ -41,10 +41,13 @@ import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.LinearFlowRewriteDB;
 import org.flowvisor.flows.NoopFlowRewriteDB;
 import org.flowvisor.io.FVMessageAsyncStream;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
-import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.flowvisor.counters.SendRecvDropStats;
+import org.flowvisor.counters.SendRecvDropStats.FVStatsType;
+
 import org.flowvisor.message.FVMessageFactory;
 import org.flowvisor.message.FVMessageUtil;
 import org.flowvisor.message.FVPacketOut;
@@ -94,9 +97,10 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	LinkedHashMap<Integer, Integer> allowedBufferIDs; // LRU cached list of
 														// buffer-IDs
 	// that this slice can address
-	final private int MAX_ALLOWED_BUFFER_IDS = 256; // max cache size
-	
+	final private int MAX_ALLOWED_BUFFER_IDS = 256; // max cache size	
 	private Integer fmlimit = -1;
+
+	final static Logger logger = LoggerFactory.getLogger(FVSlicer.class);
 
 	protected FVSlicer() {}
 	// get OFPP_FLOOD'd
@@ -145,17 +149,17 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	}*/
 
 	public void init() {
-		FVLog.log(LogLevel.DEBUG, this, "initializing new FVSlicer");
+		logger.debug("{} initializing new FVSlicer", this.getName());
 		
 		// snag controller info from config
 		try {
 			hostname = FVConfig.getSliceHost(sliceName);
 			port = FVConfig.getSlicePort(sliceName); 
 			lldpOptIn = FVConfig.getLLDPSpam(sliceName);
+			logger.debug("{} hostname: {} port: {} lldpOptIn: {}", this.getName(), hostname, port, lldpOptIn);
 			SliceImpl.addListener(sliceName, this);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.CRIT, this, "ignoring slice ", sliceName,
-					" malformed slice definition: ", e);
+			logger.error("{} ignoring slice {} malformed slice definition: {}", this.getName(), sliceName, e);
 			this.tearDown();
 			return;
 		}
@@ -168,7 +172,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 		try {
 			this.fmlimit = SliceImpl.getProxy().getMaxFlowMods(sliceName);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, this, "Global slice flow mod limit unreadable; disabling.");
+			logger.warn("{} Global slice flow mod limit unreadable; disabling.", this.getName());
 			this.fmlimit = -1;
 		}
 	}
@@ -181,8 +185,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 		case FEDERATED:
 			return fm;
 		}
-		FVLog.log(LogLevel.FATAL, null,
-				"Something is fatally wrong with the flowmap. Cannot determine its type.");
+		logger.error("Something is fatally wrong with the flowmap. Cannot determine its type.");
 		return null;
 	}
 
@@ -207,7 +210,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 		}
 		for (Short port : ports) {
 			if (!allowedPorts.keySet().contains(port)) {
-				FVLog.log(LogLevel.DEBUG, this, "adding access to port ", port);
+				logger.debug("{} adding access to port {}",this.getName(),  port);
 				allowedPorts.put(port, Boolean.TRUE);
 				addedPorts.add(port);
 			}
@@ -216,7 +219,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 				.hasNext();) {
 			Short port = it.next();
 			if (!ports.contains(port)) {
-				FVLog.log(LogLevel.DEBUG, this, "removing access to port ",
+				logger.debug("{} removing access to port {}",this.getName(), 
 						port);
 				it.remove();
 				removedPorts.add(port);
@@ -244,7 +247,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 		portStatus.setDesc(phyPort);
 		portStatus.setReason(added ? (byte) OFPortReason.OFPPR_ADD.ordinal() : 
 			(byte) OFPortReason.OFPPR_DELETE.ordinal());
-		FVLog.log(LogLevel.INFO, this, (added ? "added " : "removed ") + "port " + phyPort.getPortNumber());
+		logger.info("{} {} port {}", this.getClass().getName(), (added ? "added " : "removed "), phyPort.getPortNumber());
 		sendMsg(portStatus, this);
 	}
 
@@ -323,26 +326,23 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	@Override
 	public void sendMsg(OFMessage msg, FVSendMsg from) {
 		if (this.msgStream != null) {
-			FVLog.log(LogLevel.DEBUG, this, "send to controller: ", msg);
+			logger.debug("{} send to controller: {}",this.getName(),  msg);
 			try {
 				this.msgStream.testAndWrite(msg);
 			} catch (BufferFull e) {
-				FVLog.log(LogLevel.CRIT, this,
-						"buffer full: tearing down: got ", e,
-						": resetting connection");
+				logger.error("{} buffer full: tearing down: got {}: resetting connection",this.getName(),  e);
 				this.reconnectLater();
 			} catch (MalformedOFMessage e) {
 				this.stats.increment(FVStatsType.DROP, from, msg);
-				FVLog.log(LogLevel.CRIT, this, "BUG: ", e);
+				logger.error("{} BUG: {}",this.getName(),  e);
 			} catch (IOException e) {
-				FVLog.log(LogLevel.WARN, this, "reconnection; got IO error: ",
+				logger.warn("{} reconnection; got IO error: {}",this.getName(), 
 						e);
 				this.reconnectLater();
 			}
 		} else {
 			this.stats.increment(FVStatsType.DROP, from, msg);
-			FVLog.log(LogLevel.WARN, this,
-					"dropping msg: controller not connected: ", msg);
+			logger.warn("{} dropping msg: controller not connected: {}",this.getName(), msg);
 		}
 	}
 
@@ -411,7 +411,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	}
 
 	public void closeDown(boolean unregisterClassifier) {
-		FVLog.log(LogLevel.DEBUG, this, "tearing down");
+		logger.debug("{} tearing down", this.getName());
 		this.isShutdown = true;
 		this.loop.unregister(this.sock, this);
 		if (this.sock != null) {
@@ -445,6 +445,8 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 		info.put("controller-port", this.port);
 		info.put("shutdown-status", this.isShutdown);
 		info.put("floodperms", this.floodPerms);
+		logger.debug("{} The statusInfo is: sliceName - {} hostName - {} port- {} isShutDown- {} floodperms- {}", 
+				this.getName(), this.sliceName, this.hostname, this.port, this.isShutdown, this.floodPerms);
 		return info;
 	}
 
@@ -458,7 +460,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	@Override
 	public void handleEvent(FVEvent e) throws UnhandledEvent {
 		if (isShutdown) {
-			FVLog.log(LogLevel.WARN, this, "is shutdown; ignoring: " + e);
+			logger.warn("{} is shutdown; ignoring: {}", this.getName(), e);
 			return; // don't process any events after shutdown
 		}
 		if (e instanceof FVIOEvent)
@@ -476,14 +478,12 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 
 	private void handleKeepAlive(FVEvent e) {
 		if (!this.keepAlive.isAlive()) {
-			FVLog.log(LogLevel.WARN, this,
-					"keepAlive timeout; trying to reconnnect later");
+			logger.warn("{} keepAlive timeout; trying to reconnnect later", this.getName());
 			try {
 				if (this.sock != null)
 					this.sock.close();
 			} catch (IOException e1) {
-				FVLog.log(LogLevel.WARN, this,
-						"ignoring error while closing socket: ", e1);
+				logger.warn("{} ignoring error while closing socket: {}",this.getName(), e1);
 			}
 			this.reconnectLater();
 			return;
@@ -497,8 +497,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	}
 
 	private void reconnect() {
-		FVLog.log(LogLevel.INFO, this, "trying to reconnect to ",
-				this.hostname, ":", this.port);
+		logger.info("{} trying to reconnect to {}:{}",this.getName(),this.hostname, this.port);
 		// reset our state to unconnected (might be a NOOP)
 		this.isConnected = false;
 		this.msgStream = null;
@@ -511,8 +510,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 			sock.configureBlocking(false); // set to non-blocking
 			InetSocketAddress addr = new InetSocketAddress(hostname, port);
 			if (addr.isUnresolved()) {
-				FVLog.log(LogLevel.INFO, this,
-						"retrying: failed to resolve hostname: ", hostname);
+				logger.info("{} retrying: failed to resolve hostname: {}",this.getName(), hostname);
 				this.reconnectLater();
 				return;
 			}
@@ -520,8 +518,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 			// register into event loop
 			this.loop.register(this.sock, SelectionKey.OP_CONNECT, this);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.CRIT, this,
-					"Trying to reconnect; trying later; got : ", e);
+			logger.error("{} Trying to reconnect; trying later; got : {}",this.getName(), e);
 			this.reconnectLater();
 		}
 
@@ -534,12 +531,11 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 					return; // not done yet
 
 			} catch (IOException e1) {
-				FVLog.log(LogLevel.DEBUG, this, "retrying connection in ",
-						this.reconnectSeconds, " seconds; got: ", e1);
+				logger.debug("{} retrying connection in {} seconds; got: {}",this.getName(),this.reconnectSeconds, e1);
 				this.reconnectLater();
 				return;
 			}
-			FVLog.log(LogLevel.DEBUG, this, "connected");
+			logger.debug("{} connected", this.getName());
 			this.isConnected = true;
 			this.connectCount++;
 			HashMap<String, Object> info = this.getStatusInfo();
@@ -551,40 +547,35 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 				msgStream = new FVMessageAsyncStream(this.sock,
 						new FVMessageFactory(), this, this.stats);
 			} catch (IOException e1) {
-				FVLog.log(
-						LogLevel.WARN,
-						this,
-						"Trying again later; while creating OFMessageAsyncStream, got: ",
-						e1);
+				logger.warn("{} Trying again later; while creating OFMessageAsyncStream, got: {}",this.getName(), e1);
 				this.reconnectLater();
 				return;
 			}
 			sendMsg(new OFHello(), this); // send initial handshake
 		}
 		try {
-			if (msgStream.needsFlush()) // flush any pending messages
+			if (msgStream.needsFlush()){ // flush any pending messages
+				logger.debug("{} needsFlush: Flush the pending messages", this.getName());	
 				msgStream.flush();
+			}
 			List<OFMessage> msgs = this.msgStream.read();
 			// .read(FVSlicer.MessagesPerRead); // read any new
 			// messages
 			if (msgs == null)
 				throw new IOException("got null from read()");
 			for (OFMessage msg : msgs) {
-				FVLog.log(LogLevel.DEBUG, this, "recv from controller: ", msg);
+				logger.debug("{} recv from controller: {}",this.getName(), msg);
 				this.stats.increment(FVStatsType.SEND, this, msg);
 				if ((msg instanceof SanityCheckable)
 						&& (!((SanityCheckable) msg).isSane())) {
-					FVLog.log(LogLevel.CRIT, this,
-							"msg failed sanity check; dropping: " + msg);
+					logger.error("{} msg failed sanity check; dropping: {}", this.getName(), msg);
 					continue;
 				}
 				if (msg instanceof Slicable ) {
 					// mark this channel as still alive
 					this.keepAlive.registerPong();
 					if (msg.getType() != OFType.HELLO && !fvClassifier.isRateLimited(this.getSliceName())) {
-						FVLog.log(LogLevel.WARN, this,
-								"dropping msg because slice", this.getSliceName(), " is rate limited: ",
-								msg);
+						logger.warn("{} dropping msg because slice {}  is rate limited: {}", this.getClass().getName(), this.getSliceName(), msg);
 						this.sendMsg(FVMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_EPERM, msg), this);
 						
 						continue;
@@ -592,19 +583,14 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 					((Slicable) msg).sliceFromController(fvClassifier, this);
 					
 				} else
-					FVLog.log(LogLevel.CRIT, this,
-							"dropping msg that doesn't implement classify: ",
-							msg);
+					logger.error("{} dropping msg that doesn't implement classify: {}",this.getName(),msg);
 			}
 		} catch (IOException e1) {
-			FVLog.log(LogLevel.WARN, this,
-					"got i/o error; tearing down and reconnecting: ", e1);
+			logger.warn("{} got i/o error; tearing down and reconnecting: {}",this.getName(), e1);
 			reconnect();
 		} catch (Exception e2) {
 			e2.printStackTrace();
-			FVLog.log(LogLevel.ALERT, this,
-					"got unknown error; tearing down and reconnecting: " , e2);
-			
+			logger.error("{} got unknown error; tearing down and reconnecting: {}",this.getName(), e2);
 			reconnect();
 		}
 		// no need to setup for next select; done in eventloop
@@ -624,8 +610,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 				 * Place slice connection callback here
 				 */
 			} catch (IOException e) {
-				FVLog.log(LogLevel.WARN, this,
-						"ignoring error closing socket: ", e);
+				logger.warn("{} ignoring error closing socket: {}",this.getName(), e);
 			}
 		if (this.reconnectEventScheduled) {
 			// Don't schedule another reconnect, one's already in there
@@ -739,7 +724,7 @@ public class FVSlicer implements FVEventHandler, FVSendMsg, FlowvisorChangedList
 	 */
 
 	public void setBufferIDAllowed(int bufferID) {
-		FVLog.log(LogLevel.DEBUG, this, "allowing bufferID: ", bufferID);
+		logger.debug("{} allowing this bufferID",this.getName());
 		this.allowedBufferIDs.put(bufferID, 0);
 	}
 

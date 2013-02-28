@@ -15,9 +15,10 @@ import org.flowvisor.events.FVEventHandler;
 import org.flowvisor.events.FVEventLoop;
 import org.flowvisor.events.FVIOEvent;
 import org.flowvisor.exceptions.UnhandledEvent;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
 import org.flowvisor.resources.SlicerLimits;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OFSwitchAcceptor implements FVEventHandler {
 	FVEventLoop pollLoop;
@@ -26,6 +27,8 @@ public class OFSwitchAcceptor implements FVEventHandler {
 	int listenPort;
 	ServerSocketChannel ssc;
 	List<FVClassifier> switches;
+	final static Logger logger = LoggerFactory.getLogger(OFSwitchAcceptor.class);
+
 
 	private SlicerLimits slicerLimits;
 
@@ -44,17 +47,16 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		} catch (java.net.SocketException e) {
 			// try default/ipv4 if that fails
 			try {
-				FVLog.log(LogLevel.NOTE, this, "failed to bind IPv6 address; trying IPv4");
+				logger.info("{} failed to bind IPv6 address; trying IPv4", this.getName());
 				ssc.socket().bind(
 						new InetSocketAddress(port),
 						backlog);
 			} catch (BindException be) {
-				FVLog.log(LogLevel.FATAL, this, "Unable to listen on port " + port + 
-						" on localhost; verify that nothing else is running on that port.");
+				logger.error("{} Unable to listen on port {} on localhost; verify that nothing else is running on that port.", this.getName(), port);
 				System.exit(1);
 			} catch (java.net.SocketException se) {
-				FVLog.log(LogLevel.NOTE, this, "failed to bind IPv4 address; Quitting");
-				FVLog.log(LogLevel.NOTE, this, "OF Control address already in use.");
+				logger.info("{} failed to bind IPv4 address; Quitting", this.getName());
+				logger.info("{} OF Control address already in use.", this.getName());
 				e.printStackTrace();
 				System.exit(1);
 			} 
@@ -62,7 +64,7 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		ssc.configureBlocking(false);
 		this.listenPort = ssc.socket().getLocalPort();
 
-		FVLog.log(LogLevel.INFO, this, "Listenning on port " + this.listenPort);
+		logger.info("{} Listening on port {}", this.getName(), this.listenPort);
 
 		// register this module with the polling loop
 		pollLoop.register(ssc, SelectionKey.OP_ACCEPT, this);
@@ -130,19 +132,18 @@ public class OFSwitchAcceptor implements FVEventHandler {
 		try {
 			sock = ssc.accept();
 			if (sock == null) {
-				FVLog.log(LogLevel.CRIT, null,
-						"ssc.accept() returned null !?! FIXME!");
+				logger.error("ssc.accept() returned null !?! FIXME!");
 				return;
 			}
-			FVLog.log(LogLevel.INFO, this, "got new connection: " + sock);
+			logger.info("{} got new connection: {}", this.getName(), sock);
 			FVClassifier fvc = new FVClassifier(pollLoop, sock);
 			fvc.setSlicerLimits(this.slicerLimits);
 			fvc.init();
 		} catch (IOException e) // ignore IOExceptions -- is this the right
 		// thing to do?
 		{
-			FVLog.log(LogLevel.CRIT, this, "Got IOException for "
-					+ (sock != null ? sock : "unknown socket :: ") + e);
+			logger.error("{} Got IOException for {}", this.getName(),
+					 (sock != null ? sock : "unknown socket :: {}") , e);
 			throw new RuntimeException(e);
 		}
 	}

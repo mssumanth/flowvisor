@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.flowvisor.api.handlers.ConfigurationHandler;
 import org.flowvisor.api.handlers.MonitoringHandler;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
@@ -24,6 +24,7 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 public class JSONRPCService {
 
 	Dispatcher dispatcher = new Dispatcher();
+	final static Logger logger = LoggerFactory.getLogger(JSONRPCService.class);
 	
 	public JSONRPCService() {
 		dispatcher.register(new ConfigurationHandler());
@@ -47,7 +48,7 @@ public class JSONRPCService {
 		try {
 			writeJSONObject(resp, jsonResp);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.CRIT, null, "Unable to send response: ", stack2string(e));
+			logger.error("Unable to send response: {}",stack2string(e));
 		}
 		
 		
@@ -73,7 +74,7 @@ public class JSONRPCService {
 	        line = reader.readLine();
 	    }
 	    reader.close();
-	    FVLog.log(LogLevel.DEBUG, null, "---------JSON RPC request: ", sb.toString());
+	    logger.debug("---------JSON RPC request: {}", sb.toString());
 	    return JSONRPC2Request.parse(sb.toString());
 
 	}
@@ -91,7 +92,7 @@ public class JSONRPCService {
 		response.setContentType("text/json; charset=utf-8");
 		String json = jresp.toJSONString();
 		Writer writer = response.getWriter();
-		FVLog.log(LogLevel.DEBUG, null, "---------JSON RPC response:", json);
+		logger.debug("---------JSON RPC response: {}", json);
 		writer.write(json);
 	}
 

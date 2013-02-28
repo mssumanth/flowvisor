@@ -45,10 +45,10 @@ import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.LinearFlowDB;
 import org.flowvisor.flows.NoopFlowDB;
 import org.flowvisor.io.FVMessageAsyncStream;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
-import org.flowvisor.log.SendRecvDropStats;
-import org.flowvisor.log.SendRecvDropStats.FVStatsType;
+
+import org.flowvisor.counters.SendRecvDropStats;
+
+import org.flowvisor.counters.SendRecvDropStats.FVStatsType;
 import org.flowvisor.message.Classifiable;
 import org.flowvisor.message.FVError;
 import org.flowvisor.message.FVFlowMod;
@@ -81,6 +81,9 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Map OF messages from the switch to the appropriate slice
@@ -116,6 +119,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	private boolean wantStatsDescHack;
 	String floodPermsSlice; // the slice that has permission to use native
 	private Boolean flowTracking = false;
+	
+	final static Logger logger = LoggerFactory.getLogger(FVClassifier.class);
 
 	
 	private HashMap<String, Integer> fmlimits = new HashMap<String, Integer>();
@@ -139,7 +144,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			this.msgStream = new FVMessageAsyncStream(sock, this.factory, this,
 					this.stats);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.CRIT, this, "IOException in constructor!");
+			logger.error(this.getName(),"IOException in constructor!");
 			e.printStackTrace();
 		}
 		this.sock = sock;
@@ -233,8 +238,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			}
 		}
 		if (!found)
-			FVLog.log(LogLevel.INFO, this,
-					"asked to remove non-existant port: ", phyPort);
+			logger.info(this.getName()," asked to remove non-existant port: {}", phyPort);
 		this.activePorts.remove(phyPort.getPortNumber());
 	}
 
@@ -305,13 +309,11 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			FlowvisorImpl.addListener(this);
 		} catch (ConfigError e) {
 			try {
-				FVLog.log(LogLevel.WARN, this, "config: stats_desc_hack "
-						+ " not set; defaulting to off");
+				logger.warn(this.getName() , "config: stats_desc_hack not set; defaulting to off");
 				this.wantStatsDescHack = false;
 				FVConfig.setStatsDescHack(false);
 			} catch (ConfigError e1) {
-				throw new RuntimeException("Tried to set default "
-						+ "stats_desc_hack=true, but got: " + e1);
+				throw new RuntimeException("Tried to set default stats_desc_hack=true, but got: " + e1);
 			}
 		}
 		updateFloodPerms();
@@ -328,22 +330,23 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	void updateFloodPerms() {
 		Long dpid = null;
-		if (this.doneID)
+		if (this.doneID){
 			dpid = this.getDPID();
+		}
 		try {
 			/*String entry = FVConfig.SWITCHES + FVConfig.FS + dpid + FVConfig.FS
 				+ FVConfig.FLOOD_PERM;*/
 			String perm = FVConfig.getFloodPerm(dpid);
 			if (!perm.equals(""))
 				this.floodPermsSlice = perm;
-			FVLog.log(LogLevel.DEBUG, this, "giving flood perms to slice: "
-					+ this.floodPermsSlice);
+			logger.debug(this.getName(),"giving flood perms to slice: {}"
+			, this.floodPermsSlice);
+
 			// note: watch() is smart and won't double enter this
 			if (doneID)
 				SwitchImpl.addListener(dpid, this);
 			else
 				FlowvisorImpl.addListener(this);
-			//FVConfig.watch(this, entry);
 		} catch (ConfigError e) {
 			// do nothing if no entry
 		}
@@ -355,7 +358,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	@Override
 	public String getName() {
-		return "classifier-" + switchName;
+		return "classifier-" + switchName + ":";
 	}
 
 	@Override
@@ -366,11 +369,12 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	@Override
 	public void handleEvent(FVEvent e) throws UnhandledEvent {
 		if (this.shutdown) {
-			FVLog.log(LogLevel.WARN, this, "is shutdown: ignoring: " + e);
+			logger.warn(this.getName(),"is shutdown: ignoring: {}" , e);
 			return;
 		}
 		if (Thread.currentThread().getId() != this.getThreadContext()) {
 			// this event was sent from a different thread context
+			logger.debug(this.getName(),"FVClassifier: This event was sent from a different thread context");
 			loop.queueEvent(e); // queue event
 			return; // and process later
 		}
@@ -400,7 +404,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	private void handleKeepAlive(FVEvent e) {
 		if (!this.keepAlive.isAlive()) {
-			FVLog.log(LogLevel.WARN, this, "keepAlive timeout");
+			logger.warn(this.getName(),"keepAlive timeout");
 			this.tearDown();
 			return;
 		}
@@ -461,18 +465,17 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				if (newMsgs != null) {
 					for (OFMessage m : newMsgs) {
 						if (m == null) {
-							FVLog.log(LogLevel.ALERT, this,
+							logger.error(this.getName(),
 									"got an unparsable OF Message ",
 									"(msgStream.read() returned a null):",
 									"trying to ignore it");
 							continue;
 						}
-						//FVLog.log(LogLevel.DEBUG, this, "THE TYPE " + m.getType());
-						//FVLog.log(LogLevel.DEBUG, this, "read ", m);
+						logger.debug(this.getName(), "read {}", m);
 						if ((m instanceof SanityCheckable)
 								&& (!((SanityCheckable) m).isSane())) {
-							FVLog.log(LogLevel.WARN, this,
-									"msg failed sanity check; dropping: ", m);
+							logger.warn(this.getName(),
+									"msg failed sanity check; dropping: {}", m);
 							continue;
 						}
 						if (switchInfo != null) {
@@ -492,8 +495,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				msgStream.flush();
 		} catch (IOException e1) {
 			// connection to switch died; tear it down
-			FVLog.log(LogLevel.INFO, this,
-					"got IO exception; closing because : ", e1);
+			logger.info(this.getName(),
+					"got IO exception; closing because : {}", e1);
 			this.tearDown();
 			return;
 		}
@@ -505,7 +508,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 */
 	@Override
 	public void tearDown() {
-		FVLog.log(LogLevel.WARN, this, "tearing down");
+		logger.warn(this.getName(), "tearing down");
 		this.loop.unregister(this.sock, this);
 		this.shutdown = true;
 		try {
@@ -516,7 +519,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			for (FVSlicer fvSlicer : tmpMap.values())
 				fvSlicer.closeDown(false);
 		} catch (IOException e) {
-			FVLog.log(LogLevel.WARN, this, "weird error on close:: ", e);
+			logger.warn(this.getName(), "weird error on close:: {}", e);
 		}
 		FlowSpaceImpl.removeListener(this);
 		FlowvisorImpl.removeListener(this);
@@ -543,7 +546,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	 * @param m
 	 */
 	private void classifyOFMessage(OFMessage msg) {
-		FVLog.log(LogLevel.DEBUG, this, "received from switch: ", msg);
+		logger.debug(this.getName(), "received from switch: {}", msg);
 		((Classifiable) msg).classifyFromSwitch(this); // msg specific handling
 	}
 
@@ -559,10 +562,9 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		switch (m.getType()) {
 		case HELLO: // aleady sent our hello; just NOOP here
 			if (m.getVersion() != OFMessage.OFP_VERSION) {
-				FVLog.log(LogLevel.WARN, this,
-						"Mismatched version from switch ", sock, " Got: ", m
-								.getVersion(), " Wanted: ",
-						OFMessage.OFP_VERSION);
+				logger.warn(this.getName(),
+						"Mismatched version from switch ", sock, " Got: {} Wanted: {}", m
+								.getVersion(), OFMessage.OFP_VERSION);
 				FVError fvError = (FVError) this.factory
 						.getMessage(OFType.ERROR);
 				fvError.setErrorType(OFErrorType.OFPET_HELLO_FAILED);
@@ -591,8 +593,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			 * stats.setStatisticType(OFStatisticsType.DESC);
 			 */
 			switchName = "dpid=" + FlowSpaceUtil.dpidToString(this.getDPID());
-			FVLog.log(LogLevel.INFO, this, "identified switch as " + switchName
-					+ " on " + this.sock);
+			logger.info(this.getName(), "identified switch as {} on {}" , switchName
+					, this.sock);
 			FlowSpaceImpl.addListener(this); // register for FS updates
 			SwitchImpl.addListener(this.getDPID(), this);
 			this.connectToControllers(null); // connect to controllers
@@ -601,8 +603,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			updateFloodPerms();
 			break;
 		default:
-			FVLog.log(LogLevel.WARN, this, "Got unknown message type " + m
-					+ " to unidentified switch");
+			logger.warn(this.getName(), "Got unknown message type {} to unidentified switch" , m);
 		}
 	}
 
@@ -626,7 +627,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 				else
 					this.switchFlowMap = fm;
 			} catch (ConfigError e) {
-				FVLog.log(LogLevel.CRIT, this, "Unable to fetch Flow Space : " + e.getMessage());
+				logger.warn(this.getName(),"Unable to fetch Flow Space : {}" , e.getMessage());
+				//FVLog.log(LogLevel.FATAL, this, "Unable to fetch Flow Space : " + e.getMessage());
 				return;
 			}
 					/*FlowSpaceUtil.getSubFlowMap(this.switchInfo
@@ -642,15 +644,15 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			strbuf.append(sliceName);
 		}
 
-		FVLog.log(LogLevel.DEBUG, this, "slices with access=", strbuf
+		logger.debug(this.getName(), "slices with access= {}", strbuf
 				.toString());
 		// foreach slice, make sure it has access to this switch
 		for (String sliceName : newSlices) {
 			if (slicerMap == null)
 				throw new NullPointerException("slicerMap is null!?");
 			if (!slicerMap.containsKey(sliceName)) {
-				FVLog.log(LogLevel.INFO, this,
-						"making new connection to slice " + sliceName);
+				logger.info(this.getName(),
+						"making new connection to slice {}" , sliceName);
 				FVSlicer newSlicer = new FVSlicer(this.loop, this, sliceName);
 				if (newSlicer.isUp()) {
 					slicerMap.put(sliceName, newSlicer); // create new slicer in
@@ -665,8 +667,8 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		for (String sliceName : slicerMap.keySet()) {
 			if (!newSlices.contains(sliceName)) {
 				// this slice no longer has access to this switch
-				FVLog.log(LogLevel.INFO, this,
-						"disconnecting: removed from FlowSpace: " + sliceName);
+				logger.info(this.getName(),
+						"disconnecting: removed from FlowSpace: {}" , sliceName);
 				slicerMap.get(sliceName).closeDown(false);
 				deletelist.add(sliceName);
 			}
@@ -741,8 +743,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	public void tearDownSlice(String sliceName) {
 		if (slicerMap != null) {
 			slicerMap.remove(sliceName);
-			FVLog.log(LogLevel.DEBUG, this, "tore down slice " + sliceName
-					+ " on request");
+			logger.debug(this.getName(), "tore down slice {} on request." , sliceName);
 		}
 	}
 
@@ -772,25 +773,27 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	public void sendMsg(OFMessage msg, FVSendMsg from) {
 		if (this.msgStream != null) {
-			FVLog.log(LogLevel.DEBUG, this, "send to switch:", msg);
+			logger.debug(this.getName(), "send to switch: {}", msg);
 			try {
 				this.msgStream.testAndWrite(msg);
 			} catch (BufferFull e) {
-				FVLog.log(LogLevel.CRIT, this,
-						"framing BUG; tearing down: got ", e);
+				logger.error(this.getName(),"framing BUG; tearing down: got {}", e);
+				/*FVLog.log(LogLevel.FATAL, this,
+						"framing BUG; tearing down: got ", e);*/
 				this.loop.queueEvent(new TearDownEvent(this, this));
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (MalformedOFMessage e) {
-				FVLog.log(LogLevel.CRIT, this, "BUG: bad msg: ", e);
+				e.printStackTrace();
+				logger.error(this.getName(),"BUG: bad msg: {}", e);
+
 				this.stats.increment(FVStatsType.DROP, from, msg);
 			} catch (IOException e) {
-				FVLog.log(LogLevel.WARN, this,
-						"restarting connection, got IO error: ", e);
+				logger.warn(this.getName(),
+						"restarting connection, got IO error: {}", e);
 				this.tearDown();
 			}
 		} else {
-			FVLog
-					.log(LogLevel.WARN, this, "dropping msg: no connection: ",
+			logger.warn(this.getName(), "dropping msg: no connection: {}",
 							msg);
 			this.stats.increment(FVStatsType.DROP, from, msg);
 		}
@@ -882,7 +885,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 
 	@Override
 	public void setFlowModLimit(HashMap<String, Object> in) {
-		FVLog.log(LogLevel.DEBUG, null, "Setting limit to " + in.get("LIMIT"));
+		logger.debug("Setting limit to {}" , in.get("LIMIT"));
 		fmlimits.put((String) in.get(Slice.SLICE), (Integer) in.get("LIMIT")); 
 	}
 	
@@ -922,8 +925,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 	public boolean permitFlowMod(String sliceName) {
 		Integer limit = fmlimits.get(sliceName);
 		Integer curr = currfmlimits.get(sliceName);
-		FVLog.log(LogLevel.DEBUG,this, "Overall limit is " + limit + 
-				" current value is " + curr);
+		logger.debug("Overall limit is {} current value is {}" , limit , curr);
 		if (curr == null)
 			curr = 0;
 		currfmlimits.put(sliceName, curr);
@@ -937,7 +939,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		try {
 			limit = SwitchImpl.getProxy().getMaxFlowMods(sliceName, this.getDPID());
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, this, "Disabling dpid limits because I can't load it from the db.");
+			logger.warn("{} Disabling dpid limits because I can't load it from the db.", this.getName());
 		}
 		fmlimits.put(sliceName, limit);
 	}
@@ -947,7 +949,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		try {
 			limit = SwitchImpl.getProxy().getRateLimit(sliceName, this.getDPID());
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, this, "Disabling dpid limits because I can't load it from the db.");
+			logger.warn("{} Disabling dpid limits because I can't load it from the db.", this.getName());
 		}
 		if (limit == -1) {
 			slicerLimits.setRateLimiter(/*FlowSpaceUtil.dpidToString(this.getDPID()) + */sliceName, 
@@ -1011,7 +1013,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			}
 		}
 		if (!found) {
-			FVLog.log(LogLevel.WARN, fvSlicer, "Stats request resulted in an empty set ", original);
+			logger.warn("{} Stats request resulted in an empty set {}", fvSlicer.getName(), original);
 			return;
 		}
 		
@@ -1027,10 +1029,9 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		statsReply.setStatisticType(original.getStatisticType());
 	
 		if (statsReply.getStatistics().size() == 0) 
-			FVLog.log(LogLevel.WARN, fvSlicer, "Stats request resulted in an empty set ", original);
+			logger.warn("{} Stats request resulted in an empty set {}",fvSlicer.getName(), original);
 		
-		fvSlicer.sendMsg(statsReply, this);
-		
+		fvSlicer.sendMsg(statsReply, this);		
 	}
 
 	private boolean matchContainsPort(FVFlowStatisticsReply reply, short outPort) {
@@ -1060,7 +1061,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			if (new FVMatch(orig.getMatch()).subsumes(new FVMatch(reply.getMatch()))) {
 				if (orig.getOutPort() == OFPort.OFPP_NONE.getValue() ||
 						matchContainsPort(reply, orig.getOutPort())) {	 
-					FVLog.log(LogLevel.DEBUG, this, "Appending FlowStats reply: ", reply);
+					logger.debug("{} Appending FlowStats reply: {}", this.getName(), reply);
 					stats.add(reply);
 					statsReply.setLengthU(statsReply.getLength() + reply.computeLength());
 				}
@@ -1075,7 +1076,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 		statsReply.setStatisticType(original.getStatisticType());
 	
 		if (statsReply.getStatistics().size() == 0) 
-			FVLog.log(LogLevel.WARN, fvSlicer, "Stats request resulted in an empty set ", original);
+			logger.warn("{} Stats request resulted in an empty set ", fvSlicer.getName(), original);
 		
 		fvSlicer.sendMsg(statsReply, this);
 	
@@ -1090,7 +1091,7 @@ public class FVClassifier implements FVEventHandler, FVSendMsg, FlowMapChangedLi
 			FVFlowStatisticsReply stat = (FVFlowStatisticsReply) s;
 			CookiePair pair = getCookieTranslator().untranslate(stat.getCookie());
 			if (pair == null) {
-				FVLog.log(LogLevel.WARN, this, "Unable to classify stats - ignoring - ", stat);
+				logger.warn("{} Unable to classify stats - ignoring - ", this.getClass().getName(), stat);
 				continue;
 			}
 			stat.setTransCookie(stat.getCookie());

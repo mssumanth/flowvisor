@@ -3,7 +3,6 @@
  */
 package org.flowvisor.classifier;
 
-
 /**
  * @author capveg
  *

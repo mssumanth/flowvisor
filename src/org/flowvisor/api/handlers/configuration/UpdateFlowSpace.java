@@ -20,10 +20,11 @@ import org.flowvisor.flows.FlowEntry;
 import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.FlowSpaceUtil;
 import org.flowvisor.flows.SliceAction;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.openflow.protocol.action.OFAction;
+
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -31,7 +32,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class UpdateFlowSpace implements ApiHandler<List<Map<String, Object>>> {
 
-	
+	final static Logger logger = LoggerFactory.getLogger(UpdateFlowSpace.class);
 	
 	@Override
 	public JSONRPC2Response process(final List<Map<String, Object>> params) {
@@ -46,8 +47,7 @@ public class UpdateFlowSpace implements ApiHandler<List<Map<String, Object>>> {
 							
 	                    	for (FlowEntry fe : list)
 	                    		updateFlowEntry(flowSpace, fe);
-							FVLog.log(LogLevel.INFO, null,
-									"Signalling FlowSpace Update to all event handlers");
+							logger.info("Signalling FlowSpace Update to all event handlers");
 							FlowSpaceImpl.getProxy().notifyChange(flowSpace);
 							return null;
 	                    }
@@ -160,9 +160,9 @@ public class UpdateFlowSpace implements ApiHandler<List<Map<String, Object>>> {
 			FlowSpaceImpl.getProxy().addRule(update);
 			flowSpace.addRule(update);
 		} catch (FlowEntryNotFound e) {
-			FVLog.log(LogLevel.WARN, null, "Unable to find flowEntry ", update);
+			logger.warn("Unable to find flowEntry {}", update);
 		} catch (ConfigError e) {
-			FVLog.log(LogLevel.WARN, null, e.getMessage());
+			logger.warn("{}",e.getMessage());
 		}
 	}
 

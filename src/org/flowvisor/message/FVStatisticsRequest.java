@@ -1,8 +1,10 @@
 package org.flowvisor.message;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.message.statistics.SlicableStatistic;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFError.OFBadRequestCode;
@@ -13,12 +15,11 @@ import org.openflow.protocol.statistics.OFStatisticsType;
 
 public class FVStatisticsRequest extends OFStatisticsRequest implements
 		Classifiable, Slicable, SanityCheckable, Cloneable {
-	
+		final static Logger logger = LoggerFactory.getLogger(FVStatisticsRequest.class);
 	
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
-		FVLog.log(LogLevel.WARN, fvClassifier, "dropping unexpected msg: "
-				+ this);
+		logger.warn( "{} dropping unexpected msg: {}", fvClassifier.getName(), this.getClass().getName());
 	}
 
 	@Override
@@ -32,7 +33,7 @@ public class FVStatisticsRequest extends OFStatisticsRequest implements
 		}
 
 		if (this.getStatistics().size() != 1) {
-			FVLog.log(LogLevel.INFO, fvSlicer, "Stats request can only have one sub request in body; ", this);
+			logger.info("{} Stats request can only have one sub request in body; {}",fvSlicer.getName(), this.getClass().getName());
 			fvSlicer.sendMsg(FVMessageUtil.makeErrorMsg(
 					OFBadRequestCode.OFPBRC_EPERM, this), fvSlicer);
 			return;
@@ -82,7 +83,7 @@ public class FVStatisticsRequest extends OFStatisticsRequest implements
 		if (count == msgLen)
 			return true;
 		else {
-			FVLog.log(LogLevel.WARN, null, "msg failed sanity check: ", this);
+			logger.warn("msg failed sanity check: {}", this.getClass().getName());
 			return false;
 		}
 	}

@@ -1,8 +1,10 @@
 package org.flowvisor.message;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flowvisor.ofswitch.TopologyConnection;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFPortStatus;
@@ -16,6 +18,8 @@ import org.openflow.protocol.OFPortStatus;
 
 public class FVPortStatus extends OFPortStatus implements Classifiable,
 		Slicable, TopologyControllable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVFeaturesReply.class);
 
 	@Override
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
@@ -25,26 +29,23 @@ public class FVPortStatus extends OFPortStatus implements Classifiable,
 		boolean updateSlicers = false;
 
 		if (reason == OFPortReason.OFPPR_ADD.ordinal()) {
-			FVLog.log(LogLevel.INFO, fvClassifier, "dynamically adding port "
-					+ port);
+			logger.info( "{} dynamically adding port {}", fvClassifier.getName(), port);
 			fvClassifier.addPort(this.getDesc()); // new port dynamically added
 			updateSlicers = true;
 		} else if (reason == OFPortReason.OFPPR_DELETE.ordinal()) {
-			FVLog.log(LogLevel.INFO, fvClassifier, "dynamically removing port "
-					+ port);
+			logger.info("{} dynamically removing port {}", fvClassifier.getName(), port);
 			fvClassifier.removePort(this.getDesc());
 			updateSlicers = true;
 		} else if (reason == OFPortReason.OFPPR_MODIFY.ordinal()) {
 			// replace/update the port definition
-			FVLog.log(LogLevel.INFO, fvClassifier, "modifying port " + port);
+			logger.info("{} modifying port {}", fvClassifier.getName(), port);
 			//fvClassifier.removePort(this.getDesc());
 			/*
 			 * ash: addPort actually removes the port first.
 			 */
 			fvClassifier.addPort(this.getDesc());
 		} else {
-			FVLog.log(LogLevel.CRIT, fvClassifier, "unknown reason " + reason
-					+ " in port_status msg: " + this);
+			logger.error("{} unknown reason {} in port_status msg: {}", fvClassifier.getName(), reason, this.getClass().getName());
 		}
 
 		if (updateSlicers) {

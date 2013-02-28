@@ -4,8 +4,8 @@
 package org.flowvisor.message;
 
 import org.flowvisor.classifier.FVClassifier;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFMessage;
 
@@ -15,6 +15,8 @@ import org.openflow.protocol.OFMessage;
  */
 public class FVError extends org.openflow.protocol.OFError implements
 		Classifiable, Slicable {
+	
+	final static Logger logger = LoggerFactory.getLogger(FVError.class);
 
 	/*
 	 * (non-Javadoc)
@@ -26,8 +28,7 @@ public class FVError extends org.openflow.protocol.OFError implements
 	public void classifyFromSwitch(FVClassifier fvClassifier) {
 		FVSlicer fvSlicer = FVMessageUtil.untranslateXid(this, fvClassifier);
 		if (fvSlicer == null) {
-			FVLog.log(LogLevel.WARN, fvClassifier,
-					"dropping msg with unknown xid: " + this);
+			logger.warn("{} dropping msg with unknown xid: " , fvClassifier.getName(), this.getClass().getName());
 			return;
 		}
 		if (this.errorType == (short) OFErrorType.OFPET_BAD_ACTION.ordinal() 

@@ -16,7 +16,7 @@ public class XidTranslator {
 	static final int INIT_SIZE = (1 << 12);
 	static final int MAX_SIZE = (1 << 14); // must be larger than the max
 											// lifetime of an XID * rate of
-											// mesgs/sec
+											// msgs/sec
 	int nextID;
 	LRULinkedHashMap<Integer, XidPair> xidMap;
 

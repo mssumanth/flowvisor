@@ -4,7 +4,6 @@
 package org.flowvisor.message.lldp;
 
 import java.nio.ByteBuffer;
-
 import org.flowvisor.message.FVPacketIn;
 import org.flowvisor.message.FVPacketOut;
 import org.openflow.util.StringByteSerializer;
@@ -47,7 +46,7 @@ public class LLDPTrailer {
 			+ CHASSIS_ID_LEN;
 	String sliceName;
 	String flowVisorName; // for cross-aggregate federated GENI identification
-
+	
 	public LLDPTrailer(String sliceName) {
 		this.sliceName = sliceName;
 		this.flowVisorName = "";

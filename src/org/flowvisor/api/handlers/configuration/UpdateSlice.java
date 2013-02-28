@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
+import org.flowvisor.FlowVisor;
 import org.flowvisor.api.APIAuth;
 import org.flowvisor.api.APIUserCred;
 import org.flowvisor.api.handlers.ApiHandler;
@@ -21,8 +22,8 @@ import org.flowvisor.config.SwitchImpl;
 import org.flowvisor.exceptions.DuplicateControllerException;
 import org.flowvisor.exceptions.MissingRequiredField;
 import org.flowvisor.exceptions.PermissionDeniedException;
-import org.flowvisor.log.FVLog;
-import org.flowvisor.log.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -30,7 +31,8 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class UpdateSlice implements ApiHandler<Map<String, Object>> {
 
-	
+	final static Logger logger = LoggerFactory.getLogger(FlowVisor.class);
+
 	
 	@Override
 	public JSONRPC2Response process(Map<String, Object> params) {
@@ -94,7 +96,7 @@ public class UpdateSlice implements ApiHandler<Map<String, Object>> {
 		if (status == null)
 			return;
 		SliceImpl.getProxy().setAdminStatus(sliceName, status);
-		FVLog.log(LogLevel.WARN, null, "Setting slice status to ", status ? "enabled" : "disabled");
+		logger.warn("Setting slice status to {}", status ? "enabled" : "disabled");
 		FutureTask<Object> future = new FutureTask<Object>(
                 new Callable<Object>() {
                     public Object call() {
