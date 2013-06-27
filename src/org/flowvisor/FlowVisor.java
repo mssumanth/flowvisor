@@ -44,7 +44,6 @@ public class FlowVisor {
 
 	public final static int FLOWVISOR_DB_VERSION = 2;
 
-
 	// Max slicename len ; used in LLDP for now; needs to be 1 byte
 	public final static int MAX_SLICENAME_LEN = 255;
 
